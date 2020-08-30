@@ -20,26 +20,30 @@ module comparator
 	reg gte;
 	reg lte;
 
-	always @ (a, b) begin:COM
-		if (!(a > b))
-			lte <= 1'b1;
-		if (!(b > a))
-			gte <= 1'b1;
-		
-		if (!(lte == 1'b1)) begin
-			gt = 1'b1;
-			lt = 1'b0;
-			eq = 1'b0;
+	always @ (a,b) begin
+		{gte,lte} = 2'b0;
+		if (!(a<b)) begin 
+			// a >= b
+			gte = 1;
 		end
-		else if (!(gte == 1)) begin
-			gt = 1'b0;
-			lt = 1'b1;
-			eq = 1'b0;
+		if (!(a>b)) begin
+			// a <= b
+			lte = 1;
+		end
+		else begin 
+			{gte,lte} = 2'b0;
+		end
+		if (lte != 1) begin
+			// a > b
+			{gt,lt,eq} = 3'b100;
+		end
+		else if (gte != 1) begin
+			// a < b
+			{gt,lt,eq} = 3'b010;
 		end
 		else begin
-			gt = 1'b0;
-			lt = 1'b0;
-			eq = 1'b1;
+			{gt,lt,eq} = 3'b001;
 		end
 	end
+
 endmodule
