@@ -17,12 +17,14 @@ module adder_1bit(
     output wire sum,carry_out;
     assign sum = carry_in ^ (a ^ b);
     assign carry_out = (~carry_in & a & b) | (carry_in & (b | a));
-    //always @ (a, b, carry_in) begin
-        //#(2) assert(((a + b + carry_in)%2)==sum)
-        //else $error("Output 's' of first 1 bit adder is incorrect");
-        //assert((a==1'b1)||(a==1'b0))
-        //else $error("input 'a' is not a digital logic value");
-        //assert((b==1'b1)||(b==1'b0))
-        //else $error("input 'b' is not a digital logic value");
-    //end
+    always @ (a, b, carry_in) begin
+        #(2) assert(((a + b + carry_in)%2)==sum)
+        else $error("Output 'sum' of first 1 bit adder is incorrect");
+        #(2) assert (((a + b + carry_in)/2)==carry_out) 
+        else   $error("Output 'carry out' of first 1 bit adder is incorrect");
+        assert((a==1'b1)||(a==1'b0))
+        else $error("input 'a' is not a digital logic value");
+        assert((b==1'b1)||(b==1'b0))
+        else $error("input 'b' is not a digital logic value");
+    end
 endmodule

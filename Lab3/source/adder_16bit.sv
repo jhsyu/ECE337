@@ -14,6 +14,17 @@ module adder_16bit
 
 	// STUDENT: Fill in the correct port map with parameter override syntax for using your n-bit ripple carry adder design to be an 8-bit ripple carry adder design
 	localparam NUM_BIT = 16;
+	genvar i;
+	generate
+		for (i = 0; i < NUM_BIT; i = i + 1) begin
+			always @ (a[i], b[i]) begin
+				assert((a[i]==1'b1)||(a[i]==1'b0))
+            	else $error("input 'a[%d]' is not a digital logic value",i);
+            	assert((b[i]==1'b1)||(b[i]==1'b0))
+            	else $error("input 'b[%d]' is not a digital logic value",i);
+			end
+		end
+	endgenerate
 	adder_nbit #(NUM_BIT) a0 (
 		.a(a), 
 		.b(b), 

@@ -24,14 +24,16 @@ module adder_nbit #(parameter  BIT_WIDTH = 4)
     generate
     for (i = 0; i < BIT_WIDTH; i = i + 1) begin
         adder_1bit IX(.a(a[i]), .b(b[i]), .carry_in(cout[i]), .sum(sum[i]), .carry_out(cout[i+1]));
-        //always @ (a[i],b[i],cout[i]) begin
-            //assert((a[i]==1'b1)||(a[i]==1'b0))
-            //else $error("input 'a[%d]' is not a digital logic value",i);
-            //assert((b[i]==1'b1)||(b[i]==1'b0))
-            //else $error("input 'b[%d]' is not a digital logic value",i);
-            //#(2) assert (((a[i]+b[i]+cout[i])%2)==sum[i])
-            //else $error("output 'sum[%d]' of is incorrect!",i);
-        //end
+        always @ (a[i],b[i],cout[i]) begin
+            assert((a[i]==1'b1)||(a[i]==1'b0))
+            else $error("input 'a[%d]' is not a digital logic value",i);
+            assert((b[i]==1'b1)||(b[i]==1'b0))
+            else $error("input 'b[%d]' is not a digital logic value",i);
+            #(2) assert (((a[i]+b[i]+cout[i])%2)==sum[i])
+            else $error("output 'sum[%d]' of is incorrect!",i);
+            #(2) assert (((a[i]+b[i]+cout[i])/2)==cout[i+1])
+            else $error("output 'cout[%d]' of is incorrect!",i);
+        end
     end
     endgenerate
     assign overflow = cout[BIT_WIDTH];
