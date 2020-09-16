@@ -53,7 +53,7 @@ adder_16bit DUT (.a(tb_a), .b(tb_b), .carry_in(tb_carry_in), .sum(tb_sum), .over
 initial begin
   // Create the test-vector array with enough slots for test cases
   // STUDENT TODO: Update the array declaration to have enough slots
-  tb_test_cases = new[5];
+  tb_test_cases = new[10];
 
   // First Test Case/Test-Vector
   tb_test_cases[0].test_name = "Zeros Check";
@@ -63,7 +63,7 @@ initial begin
 
   // STUDENT TODO: Add your additional test cases here after increasing the array size
 
-  // large A, small B
+  // large A, small B, cin = 0
   tb_test_cases[1].test_name = "case 1";
   tb_test_cases[1].test_a    = 16'hffff;
   tb_test_cases[1].test_b    = 16'h000f;
@@ -84,6 +84,47 @@ initial begin
   tb_test_cases[3].test_a    = 16'h000f;
   tb_test_cases[3].test_b    = 16'h000f;
   tb_test_cases[3].test_cin  = 1'b0;
+
+  // large A, small B, cin = 1
+  tb_test_cases[4].test_name = "case 5";
+  tb_test_cases[4].test_a    = 16'hffff;
+  tb_test_cases[4].test_b    = 16'h000f;
+  tb_test_cases[4].test_cin  = 1'b1;
+
+  // small A, large B, cin = 1
+  tb_test_cases[5].test_name = "case 6";
+  tb_test_cases[5].test_a    = 16'h000f;
+  tb_test_cases[5].test_b    = 16'hffff;
+  tb_test_cases[5].test_cin  = 1'b1;
+
+  // large A, large B
+  tb_test_cases[6].test_name = "case 7";
+  tb_test_cases[6].test_a    = 16'hffff;
+  tb_test_cases[6].test_b    = 16'hffff;
+  tb_test_cases[6].test_cin  = 1'b1;
+
+  // small A, small B
+  tb_test_cases[7].test_name = "case 8";
+  tb_test_cases[7].test_a    = 16'h000f;
+  tb_test_cases[7].test_b    = 16'h000f;
+  tb_test_cases[7].test_cin  = 1'b1;
+
+  tb_test_cases[8].test_name = "case 9";
+  tb_test_cases[8].test_a    = 16'h0000;
+  tb_test_cases[8].test_b    = 16'hffff;
+  tb_test_cases[8].test_cin  = 1'b1;
+
+  tb_test_cases[9].test_name = "case 10";
+  tb_test_cases[9].test_a    = 16'hffff;
+  tb_test_cases[9].test_b    = 16'h0000;
+  tb_test_cases[9].test_cin  = 1'b0;
+
+  tb_test_cases[10].test_name = "case 11";
+  tb_test_cases[10].test_a    = 16'ha4b3;
+  tb_test_cases[10].test_b    = 16'hbc5e;
+  tb_test_cases[10].test_cin  = 1'b1;
+
+
 end
 
 // Handle expected results bit-slice mappings
