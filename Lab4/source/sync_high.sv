@@ -14,8 +14,14 @@ module sync_high (
 );
     input logic clk, n_rst, async_in;
     output logic sync_out;
+    logic temp;
+    always_ff @ (posedge clk, negedge n_rst) begin
+        if (n_rst == 1'b0) temp <= 1'b1;
+        else temp <= async_in;
+    end
+
     always_ff @ (posedge clk, negedge n_rst) begin
         if (n_rst == 1'b0) sync_out <= 1'b1;
-        else sync_out <= async_in;
+        else sync_out <= temp;
     end
 endmodule
