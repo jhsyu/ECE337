@@ -167,7 +167,7 @@ module tb_sync_low();
                   "after processing delay");
     
     // ************************************************************************    
-    // Test Case 3: Setup Violation with Input as a '0'
+    // Test Case 3.0: Setup Violation with Input as a '0'
     // ************************************************************************
     @(negedge tb_clk); 
     tb_test_num = tb_test_num + 1;
@@ -193,9 +193,65 @@ module tb_sync_low();
     // Move away from risign edge and allow for propagation delays before checking
     #(CHECK_DELAY);
     check_output_meta("after processing delay");
-    
+
+    // ************************************************************************    
+    // Test Case 3.1: Setup Violation with Input as a '1'
     // ************************************************************************
-    // Test Case 4: Hold Violation with Input as a '1'
+    @(negedge tb_clk); 
+    tb_test_num = tb_test_num + 1;
+    tb_test_case = "Setup Violation with Input as a '1'";
+    // Start out with inactive value and reset the DUT to isolate from prior tests
+    tb_async_in = INACTIVE_VALUE;
+    reset_dut();
+
+    // Handle setup violation test case stimulus
+    // Timing violations require value transisitions on input
+    // -> Need to start with input at oppositte value of main stimulus
+    tb_async_in = 1'b0;
+    // Allow value to feed in to design
+    @(posedge tb_clk);
+    // Wait until test is inside the setup time before the next rising clock edge
+    #(CLK_PERIOD - (FF_SETUP_TIME * 0.5)); 
+    // Change the input value
+    tb_async_in = 1'b1;
+
+    // Wait for DUT to process the stimulus
+    @(posedge tb_clk); 
+    @(posedge tb_clk); 
+    // Move away from risign edge and allow for propagation delays before checking
+    #(CHECK_DELAY);
+    check_output_meta("after processing delay");  
+
+    // ************************************************************************
+    // Test Case 4.0: Hold Violation with Input as a '0'
+    // ************************************************************************
+    @(negedge tb_clk); 
+    tb_test_num = tb_test_num + 1;
+    tb_test_case = "Hold Violation with Input as a '0'";
+    // Start out with inactive value and reset the DUT to isolate from prior tests
+    tb_async_in = INACTIVE_VALUE;
+    reset_dut();
+
+    // Handle hold violation test case stimulus
+    // Timing violations require value transisitions on input
+    // -> Need to start with input at oppositte value of main stimulus
+    tb_async_in = 1'b1;
+    // Allow value to feed in to design
+    @(posedge tb_clk);
+    // Wait until test is inside the hold time after the current rising clock edge
+    #(FF_HOLD_TIME * 0.5);
+    // Change the input value 
+    tb_async_in = 1'b0;
+
+    // Wait for DUT to process the stimulus
+    @(posedge tb_clk); 
+    @(posedge tb_clk); 
+    // Move away from risign edge and allow for propagation delays before checking
+    #(CHECK_DELAY);
+    check_output_meta("after processing delay");
+
+    // ************************************************************************
+    // Test Case 4.1: Hold Violation with Input as a '1'
     // ************************************************************************
     @(negedge tb_clk); 
     tb_test_num = tb_test_num + 1;
