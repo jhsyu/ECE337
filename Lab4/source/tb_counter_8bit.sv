@@ -1,15 +1,16 @@
 // $Id: $
-// File name:   tb_flex_counter.sv
+// File name:   tb_ounter_8bit.sv
 // Created:     9/22/2020
 // Author:      Jiahao Xu
 // Lab Section: 337-002
 // Version:     1.0  Initial Design Entry
 // Description: .
 `timescale 1ns / 10ps
-module tb_flex_counter();
+
+module tb_counter_8bit();
   // Define local parameters used by the test bench
   localparam  CLK_PERIOD = 2.5;
-  localparam  NUM_BITS = 4;
+  localparam  NUM_BITS = 8;
   localparam  RESET_COUNT = 'b0;
   localparam  RESET_FLAG = 1'b0;
   
@@ -78,7 +79,7 @@ module tb_flex_counter();
     #(CLK_PERIOD/2.0);
   end
 
-  flex_counter DUT (.clk(tb_clk), .n_rst(tb_n_rst), .clear(tb_clear), .count_enable(tb_count_enable), 
+  counter_8bit DUT (.clk(tb_clk), .n_rst(tb_n_rst), .clear(tb_clear), .count_enable(tb_count_enable), 
                     .rollover_val(tb_rollover_val), .count_out(tb_count_out), .rollover_flag(tb_rollover_flag));
 
   // Test bench main process
@@ -87,7 +88,7 @@ module tb_flex_counter();
     tb_n_rst  = 1'b1;              // Initialize to be inactive
     tb_clear = 1'b0;
     tb_count_enable = 1'b0;
-    tb_rollover_val = 4'h2;
+    tb_rollover_val = 2;
 
     tb_test_num = 0;               // Initialize test case counter
     tb_test_case = "Test bench initializaton";
@@ -107,7 +108,7 @@ module tb_flex_counter();
     // Apply test case initial stimulus
     tb_count_enable = 1'b0;
     tb_clear = 1'b0;
-    tb_rollover_val = 4'h2;
+    tb_rollover_val = 2;
     tb_n_rst  = 1'b0;    // Activate reset
     
     // Wait for a bit before checking for correct functionality
@@ -137,7 +138,7 @@ module tb_flex_counter();
     tb_count_enable = 1'b1;
     tb_n_rst = 1'b1;
     tb_clear = 1'b0;
-    tb_rollover_val = 4'h7;
+    tb_rollover_val = 3;
     reset_dut();
 
     @(posedge tb_clk);
@@ -146,7 +147,7 @@ module tb_flex_counter();
 
     #(CLK_PERIOD/2.0);
     $display("TEST CASE 2");
-    check_output(4'h3,1'b0);
+    check_output(3,1'b1);
 
 
     // ************************************************************************
@@ -159,14 +160,18 @@ module tb_flex_counter();
     tb_count_enable = 1'b1;
     tb_n_rst = 1'b1;
     tb_clear = 1'b0;
-    tb_rollover_val = 4'h7;
+    tb_rollover_val = 2;
     reset_dut();
 
-    #(CLK_PERIOD*15);    
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    
 
     #(CLK_PERIOD/2.0);
     $display("TEST CASE 3");
-    check_output(4'h1,1'b0);
+    check_output(2,1'b1);
 
 
 
@@ -180,7 +185,7 @@ module tb_flex_counter();
     tb_count_enable = 1'b1;
     tb_n_rst = 1'b1;
     tb_clear = 1'b0;
-    tb_rollover_val = 4'h2;
+    tb_rollover_val = 2;
     reset_dut();
 
     @(posedge tb_clk);
@@ -191,13 +196,13 @@ module tb_flex_counter();
 
     $display("TEST CASE 4");
     #(CLK_PERIOD/2.0);
-    check_output(4'h2,1'b1);
+    check_output(2,1'b1);
 
     @(posedge tb_clk);
     DUT_clear();
     @(posedge tb_clk);
     #(CLK_PERIOD/2.0);
-    check_output(4'h1,1'b0);
+    check_output(1,1'b0);
 
 
 
@@ -211,7 +216,7 @@ module tb_flex_counter();
     tb_count_enable = 1'b1;
     tb_n_rst = 1'b1;
     tb_clear = 1'b1;
-    tb_rollover_val = 4'h2;
+    tb_rollover_val = 2;
     reset_dut();
 
     @(posedge tb_clk);
@@ -219,6 +224,6 @@ module tb_flex_counter();
 
     $display("TEST CASE 5");
     #(CLK_PERIOD/2.0);
-    check_output(4'h0,1'b0);
+    check_output(0,1'b0);
   end
 endmodule

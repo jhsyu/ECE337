@@ -1,0 +1,29 @@
+Coverage Report Summary Data by file
+
+=================================================================================
+=== File: /home/ecegrid/a/ece337/Course_Prod/Cell_Libs/AMI_05/osu05_stdcells.vhdl
+=================================================================================
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                    146       138         8     94.52
+
+=================================================================================
+=== File: mapped/flex_counter.v
+=================================================================================
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Toggle Bins                     92        66        26     71.73
+
+=================================================================================
+=== File: source/tb_flex_counter.sv
+=================================================================================
+    Enabled Coverage            Active      Hits    Misses % Covered
+    ----------------            ------      ----    ------ ---------
+    Stmts                          103       101         2     98.05
+    Branches                         4         2         2     50.00
+    FEC Condition Terms              2         0         2      0.00
+    Toggle Bins                    154        21       133     13.63
+
+
+Total Coverage By File (code coverage only, filtered view): 51.36%
+

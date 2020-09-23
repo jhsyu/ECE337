@@ -1,0 +1,14 @@
+Flex_Counter Results:
+Due to serious synthesis problems your the score for this submission is
+automatically zero (0) points
+ Your design has the following synthesis errors, designs must be error free
+  Error:  ./source/flex_counter.sv:28: Variable 'count_out' is the target of both blocking and nonblocking assignments in the same always block. (VER-134)
+  Error: Cannot find the design 'flex_counter' in the library 'WORK'. (LBR-0)
+  dc_shell> dc_shell> Error: Current design is not defined. (UID-4)
+  dc_shell> dc_shell> dc_shell> dc_shell> dc_shell> dc_shell> Error: Current design is not defined. (UID-4)
+  Error: Can't find object 'clk'. (UID-109)
+  Error: Value for list 'source_objects' must have 1 elements. (CMD-036)
+  dc_shell> dc_shell> dc_shell> Error: Current design is not defined. (UID-4)
+  dc_shell> dc_shell> dc_shell> dc_shell> dc_shell> dc_shell> dc_shell> dc_shell> Error: No files or designs were specified. (UID-22)
+  dc_shell> Error: Current design is not defined. (UID-4)
+
