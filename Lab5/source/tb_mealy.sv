@@ -215,6 +215,8 @@ module tb_mealy();
     tb_test_data = '{1'b1,1'b1,1'b0,1'b1, 1'b0};
     // Contiguously stream enough zeros to fill the shift register
     send_stream(tb_test_data);
+    tb_expected_ouput = 1'b1;
+    check_output("1101 detected");
 
     // ************************************************************************
     // Test Case 5: overlapping 1101 detects.
@@ -227,9 +229,7 @@ module tb_mealy();
     tb_test_data = '{1'b1,1'b1,1'b0,1'b1, 1'b1, 1'b0, 1'b1};
     // Contiguously stream enough zeros to fill the shift register
     send_stream(tb_test_data);
-
-
-
-
+    tb_expected_ouput = 1'b1;
+    check_output("1101 detected");
   end
 endmodule

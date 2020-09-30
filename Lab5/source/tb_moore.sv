@@ -212,10 +212,13 @@ module tb_moore();
     // Start out with inactive value and reset the DUT to isolate from prior tests
     tb_i = 1'b0;
     reset_dut();
-    tb_test_data = '{1'b1,1'b1,1'b0,1'b1, 1'b0};
+    tb_test_data = '{1'b1,1'b1,1'b0,1'b1};
+
     // Contiguously stream enough zeros to fill the shift register
     send_stream(tb_test_data);
-
+    @(posedge tb_clk);
+    tb_expected_ouput = 1'b1;
+    check_output("1101 detect");
     // ************************************************************************
     // Test Case 5: overlapping 1101 detects.
     // ************************************************************************
@@ -227,9 +230,9 @@ module tb_moore();
     tb_test_data = '{1'b1,1'b1,1'b0,1'b1, 1'b1, 1'b0, 1'b1};
     // Contiguously stream enough zeros to fill the shift register
     send_stream(tb_test_data);
-
-
-
+    @(posedge tb_clk);
+    tb_expected_ouput = 1'b1;
+    check_output("1101 detect");
 
   end
 endmodule
