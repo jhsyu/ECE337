@@ -33,8 +33,8 @@ module mealy (clk, n_rst, i, o);
     end
     // output logic
     always_comb begin
-        if (s == S3) assign o = (i == 1'b1) ? 1'b1 : 1'b0;
-        else assign o = 1'b0;
+        if (s == S3 && i == 1) o = 1'b1;
+        else o = 1'b0;
     end
 
 endmodule

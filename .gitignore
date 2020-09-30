@@ -26,3 +26,6 @@ covhtmlreport/
 #*#
 *.wlf
 do_mapping.tcl
+*.do
+.gitignore
+*.ini

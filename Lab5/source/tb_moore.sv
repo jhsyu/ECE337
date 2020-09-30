@@ -1,13 +1,13 @@
 // $Id: $
-// File name:   tb_mealy.sv
+// File name:   tb_moore.sv
 // Created:     9/29/2020
 // Author:      Jiahao Xu
 // Lab Section: 337-002
 // Version:     1.0  Initial Design Entry
-// Description: . 
+// Description: .
 `timescale 1ns / 10ps
 
-module tb_mealy();
+module tb_moore();
   // Define parameters
   // Common parameters
   localparam CLK_PERIOD        = 2.5;
@@ -116,7 +116,7 @@ module tb_mealy();
   end
 
   // DUT Portmap
-    mealy DUT (.clk(tb_clk), .n_rst(tb_n_rst), .i(tb_i), .o(tb_o));
+    moore DUT (.clk(tb_clk), .n_rst(tb_n_rst), .i(tb_i), .o(tb_o));
 
   // Test bench main process
   initial begin
