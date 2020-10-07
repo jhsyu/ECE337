@@ -36,9 +36,9 @@ module tb_timer();
     task  reset;
     begin
        @(negedge tb_clk);
-       tb_n_rst = 1'b1;
-       @(negedge tb_clk);
        tb_n_rst = 1'b0;
+       @(negedge tb_clk);
+       tb_n_rst = 1'b1;
     end
     endtask
 
@@ -53,11 +53,13 @@ module tb_timer();
         tb_test_case = "power one reset";
         #0.1
         reset();
+        #(CLK_PERIOD);
 
         // TEST CASE 2: 
         tb_test_number = tb_test_number + 1;
         tb_test_case = "timing";
         tb_enable_timer = 1'b1;
+        tb_n_rst = 1'b1;
         
         #(CLK_PERIOD * 400);
 
