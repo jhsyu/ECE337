@@ -19,15 +19,12 @@ module rcu (clk, n_rst,
     output wire enable_timer;
 
     reg [3:0] out;
-    reg [2:0] s, next_s;
+    reg [1:0] s, next_s;
 
-    localparam IDLE  = 3'b000;
-    localparam CLEAR = 3'b001;
-    //localparam WAIT0 = 3'b010;
-    localparam READ  = 3'b011;
-    localparam SBCEN = 3'b100;
-    localparam CHECK = 3'b101;
-    localparam LOAD  = 3'b110;
+    localparam IDLE  = 2'b00;
+    localparam WAIT  = 2'b01;
+    localparam READ  = 2'b10;
+    localparam CHECK = 2'b11;
     // state regiusters
     always_ff@(posedge clk, negedge n_rst) begin
         if (!n_rst) s <= IDLE;
@@ -37,12 +34,10 @@ module rcu (clk, n_rst,
     // next state logic
     always_comb begin
         case (s)
-            IDLE:  next_s = (start_bit_detected) ? CLEAR : IDLE;
-            CLEAR: next_s = READ;
-            //WAIT0: next_s = READ;
-            READ:  next_s = (packet_done) ? SBCEN: READ;
-            SBCEN: next_s = CHECK;
-            CHECK: next_s = (framing_error) ? IDLE : LOAD; 
+            IDLE: next_s = (start_bit_detected) ? WAIT : IDLE;
+            WAIT: next_s = READ;
+            READ: next_s = (packet_done) ? CHECK: READ;
+            CHECK: next_s = IDLE; 
             default: next_s = IDLE;
         endcase
     end
@@ -50,12 +45,10 @@ module rcu (clk, n_rst,
     // output logic
     always_comb begin
         case (s)
-            IDLE:  out = 4'b0000;
-            CLEAR: out = 4'b0010;
-            READ:  out = 4'b1000;
-            SBCEN: out = 4'b0100;
-            CHECK: out = 4'b0000;
-            LOAD:  out = 4'b0001; 
+            IDLE:  out = (start_bit_detected) ? 4'b0010 : 4'b0000;
+            WAIT:  out = 4'b1000;
+            READ:  out = (packet_done) ? 4'b0100 : 4'b1000;
+            CHECK: out = (framing_error) ? 4'b0000 : 4'b0001; 
             default: out = 4'b0000;
         endcase
     end

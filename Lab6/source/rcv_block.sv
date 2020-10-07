@@ -15,9 +15,10 @@ module rcv_block (clk, n_rst,
     output wire data_ready;
     output wire overrun_error, framing_error; 
 
-    wire start, stop, shift_en, done;
+    wire start, shift_en, done;
     wire sbc_clr, sbc_en, ld_buf, timer_en;
-    reg [8:0] databus; 
+    reg [7:0] packet_data; 
+    reg stop;
 
 
     start_bit_det det0 (.clk(clk), .n_rst(n_rst),
@@ -27,7 +28,7 @@ module rcv_block (clk, n_rst,
 
     sr_9bit sr0 (.clk(clk), .n_rst(n_rst), .shift_strobe(shift_en), 
                 .serial_in(serial_in), 
-                .packet_data(databus[8:1]), .stop_bit(databus[0])
+                .packet_data(packet_data), .stop_bit(stop)
     );
 
     rcu cu0 (.clk(clk), 
@@ -51,14 +52,14 @@ module rcv_block (clk, n_rst,
                        .n_rst(n_rst),
                        .sbc_clear(sbc_clr),
                        .sbc_enable(sbc_en),
-                       .stop_bit(databus[0]),
+                       .stop_bit(stop),
                        .framing_error(framing_error)
     );
 
     rx_data_buff buff0 (.clk(clk),
                         .n_rst(n_rst),
                         .load_buffer(ld_buf),
-                        .packet_data(databus[8:1]),
+                        .packet_data(packet_data),
                         .data_read(data_read),
                         .rx_data(rx_data),
                         .data_ready(data_ready),

@@ -16,12 +16,12 @@ include /home/ecegrid/a/ece337/Course_Prod/course_make_vars
 # (do not include the source folder in the name)
 # NOTE: YOU WILL NEED TO SET THIS VARIABLE'S VALUE WHEN WORKING WITH HEIRARCHICAL DESIGNS
 # AND THE AUTOMATED GRADING SYSTEM
-COMPONENT_FILES	:= 
+COMPONENT_FILES	:= flex_stp_sr.sv flex_counter.sv rcu.sv rx_data_buff.sv sr_9bit.sv start_bit_det.sv stop_bit_chk.sv timer.sv
 
 # Specify the name of the top level file (do not include the source folder in the name)
 # NOTE: YOU WILL NEED TO SET THIS VARIABLE'S VALUE WHEN WORKING WITH HEIRARCHICAL DESIGNS
 # AND THE AUTOMATED GRADING SYSTEM
-TOP_LEVEL_FILE	:= 
+TOP_LEVEL_FILE	:= rcv_block.sv
 
 # Specify the filepath of the test bench you want to use (ie. tb_top_level.sv)
 # (do not include the source folder in the name)
@@ -216,11 +216,11 @@ sim_full_source: $(addprefix $(S_WORK_LIB)/, $(notdir $(basename $(TOP_LEVEL_FIL
 
 # Uncomment below if you want run the simulation the normal way and have it
 # run the specified .do file
-#	@$(SIMULATE) -t ps -do s_waves.do $(S_WORK_LIB).$(TB_MODULE)
+	@$(SIMULATE) -t ps -do rcv.do $(S_WORK_LIB).$(TB_MODULE)
 
 # This way just runs it like normal and only sets up the simulation but doesn't
 # run it or add any waveforms
-	@$(SIMULATE) -i -t ps $(S_WORK_LIB).$(TB_MODULE)
+	#@$(SIMULATE) -i -t ps $(S_WORK_LIB).$(TB_MODULE)
 	@cp -f transcript $(basename $(TOP_LEVEL_FILE)).stran
 	@echo -e "Done simulating the source design\n\n"
 
