@@ -6,7 +6,8 @@
 // Version:     1.0  Initial Design Entry
 // Description: .
 module counter(clk, n_rst, cnt_up, clear, one_k_samples);
-    input wire clk, n_rst, cnt_up, clear, one_k_samples;
+    input wire clk, n_rst, cnt_up, clear;
+    output reg one_k_samples;
     localparam NUM_BITS = 12;
     localparam VAL = 1000;
     flex_counter #(NUM_BITS) flx_cnt (

@@ -83,17 +83,12 @@ module tb_fir_filter();
 	
 	// DUT portmap
 	fir_filter DUT(
-									.clk(tb_clk),
-									.n_reset(tb_n_reset),
-									.sample_data(tb_sample),
-									.fir_coefficient(tb_coeff),
-									.data_ready(tb_data_ready),
-									.load_coeff(tb_load_coeff),
-									.one_k_samples(tb_one_k_samples),
-									.modwait(tb_modwait),
-									.fir_out(tb_fir_out),
-									.err(tb_err)
-								);
+		.clk(tb_clk), .n_reset(tb_n_reset),
+		.sample_data(tb_sample), .fir_coefficient(tb_coeff),
+		.data_ready(tb_data_ready), .load_coeff(tb_load_coeff),
+		.one_k_samples(tb_one_k_samples), .modwait(tb_modwait),
+		.fir_out(tb_fir_out), .err(tb_err)
+	);
 	
 	// Task for sending a signle coefficient
 	task send_coeff;
