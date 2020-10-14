@@ -51,14 +51,14 @@ module controller(clk, n_rst, dr, lc, overflow,
     localparam ADD3     = 5'b01100;
     localparam MUL4     = 5'b01101;
     localparam SUB4     = 5'b01110;
-    localparam EIDLE    = 5'b01111;
+    localparam EIDLE    = 5'b01111; //15
 
-    localparam LOADC0   = 5'b10000;
+    localparam LOADC0   = 5'b10000; //16
     localparam LOADC1   = 5'b10001;
     localparam LOADC2   = 5'b10010;
     localparam LOADC3   = 5'b10011;
 
-    localparam WAIT0    = 5'b10100;
+    localparam WAIT0    = 5'b10100; //20
     localparam WAIT1    = 5'b10101;
     localparam WAIT2    = 5'b10110;
     localparam WAIT3    = 5'b10111;
@@ -67,7 +67,8 @@ module controller(clk, n_rst, dr, lc, overflow,
 
 
     //state registers. 
-    reg [4:0] s, next_s; 
+    reg [4:0] s, next_s;
+    reg next_modwait; 
 
     // output registers.
     reg [2:0] out0;
@@ -75,70 +76,151 @@ module controller(clk, n_rst, dr, lc, overflow,
 
     // state registers. 
     always_ff @ (posedge clk, negedge n_rst) begin
-        if (!n_rst) s <= IDLE; // reset to IDLE. 
-        else s <= next_s;
+        if (!n_rst) begin
+            s <= IDLE;
+            modwait <= 1'b0;
+        end 
+        else begin
+            s <= next_s;
+            modwait <= next_modwait;
+        end
     end
 
     // next state logic
     always_comb begin
         case (s)
-            IDLE:   next_s = (lc) ? LOADC0  : 
-                             (dr) ? LOADD   : IDLE;
-            LOADD:  next_s = (dr) ? ZERO    : EIDLE;
-            ZERO:   next_s = SORT1;
-            SORT1:  next_s = SORT2;
-            SORT2:  next_s = SORT3;
-            SORT3:  next_s = SORT4;
-            SORT4:  next_s = MUL1; 
-            MUL1:   next_s = (overflow) ? EIDLE : ADD1;
-            ADD1:   next_s = (overflow) ? EIDLE : MUL2;
-            MUL2:   next_s = (overflow) ? EIDLE : SUB2;
-            SUB2:   next_s = (overflow) ? EIDLE : MUL3;
-            MUL3:   next_s = (overflow) ? EIDLE : ADD3;
-            ADD3:   next_s = (overflow) ? EIDLE : MUL4;
-            MUL4:   next_s = (overflow) ? EIDLE : SUB4;
-            SUB4:   next_s = (overflow) ? EIDLE : IDLE; 
-            EIDLE:  next_s = (~(dr||lc))? EIDLE : LOADD; 
+            IDLE: begin 
+                next_s = (lc) ? LOADC0  : 
+                         (dr) ? LOADD   : IDLE;
+                next_modwait = (lc || dr) ? 1'b1 : 1'b0;
+            end
+            LOADD:begin 
+                next_s = (dr) ? ZERO    : EIDLE;
+                next_modwait = (dr) ? 1'b1 : 1'b0;
+            end
+            ZERO: begin 
+                next_s = SORT1;
+                next_modwait = 1'b1;
+            end
+            SORT1:  begin 
+                next_s = SORT2;
+                next_modwait = 1'b1;
+            end
+            SORT2:  begin 
+                next_s = SORT3;
+                next_modwait = 1'b1;
+            end
+            SORT3:  begin 
+                next_s = SORT4;
+                next_modwait = 1'b1;
+            end
+            SORT4:  begin 
+                next_s = MUL1;
+                next_modwait = 1'b1;
+            end 
+            MUL1:   begin 
+                next_s = (overflow) ? EIDLE : ADD1;
+                next_modwait = (overflow) ? 1'b0 : 1'b1;
+            end
+            ADD1:   begin 
+                next_s = (overflow) ? EIDLE : MUL2;
+                next_modwait = (overflow) ? 1'b0 : 1'b1;
+            end
+            MUL2:   begin 
+                next_s = (overflow) ? EIDLE : SUB2;
+                next_modwait = (overflow) ? 1'b0 : 1'b1;
+            end
+            SUB2:   begin 
+                next_s = (overflow) ? EIDLE : MUL3;
+                next_modwait = (overflow) ? 1'b0 : 1'b1;
+            end
+            MUL3:   begin 
+                next_s = (overflow) ? EIDLE : ADD3;
+                next_modwait = (overflow) ? 1'b0 : 1'b1;
+            end
+            ADD3:   begin 
+                next_s = (overflow) ? EIDLE : MUL4;
+                next_modwait = (overflow) ? 1'b0 : 1'b1;
+            end
+            MUL4:   begin 
+                next_s = (overflow) ? EIDLE : SUB4;
+                next_modwait = (overflow) ? 1'b0 : 1'b1;
+            end
+            SUB4:   begin 
+                next_s = (overflow) ? EIDLE : IDLE;
+                next_modwait = 1'b0;
+            end 
+            EIDLE:  begin 
+                next_s = (~(dr||lc))? EIDLE : LOADD;
+                next_modwait = (~(dr||lc))? 1'b0 : 1'b1;
+            end 
 
-            LOADC0: next_s = WAIT0;
-            WAIT0:  next_s = (lc) ? LOADC1 : WAIT0;
-            LOADC1: next_s = WAIT1;
-            WAIT1:  next_s = (lc) ? LOADC2 : WAIT1;
-            LOADC2: next_s = WAIT2;
-            WAIT2:  next_s = (lc) ? LOADC3 : WAIT2;
-            LOADC3: next_s = WAIT3;
-            WAIT3:  next_s = IDLE;
+            LOADC0: begin 
+                next_s = WAIT0;
+                next_modwait = 1'b0;
+            end
+            WAIT0:  begin 
+                next_s = (lc) ? LOADC1 : WAIT0;
+                next_modwait = (lc) ? 1'b1 : 1'b0;
+            end
+            LOADC1: begin 
+                next_s = WAIT1;
+                next_modwait = 1'b0;
+            end
+            WAIT1:  begin 
+                next_s = (lc) ? LOADC2 : WAIT1;
+                next_modwait = (lc) ? 1'b1 : 1'b0;
+            end
+            LOADC2: begin 
+                next_s = WAIT2;
+                next_modwait = 1'b0;
+            end
+            WAIT2:  begin 
+                next_s = (lc) ? LOADC3 : WAIT2;
+                next_modwait = (lc) ? 1'b1 : 1'b0;
+            end
+            LOADC3: begin 
+                next_s = WAIT3;
+                next_modwait = 1'b0;
+            end
+            WAIT3:  begin 
+                next_s = IDLE;
+                next_modwait = (lc) ? 1'b1 : 1'b0;
+            end
 
-            default: next_s = EIDLE;
+            default: begin 
+                next_s = EIDLE;
+                next_modwait = 1'b0;
+            end
         endcase
     end
     
     // output logic
     always_comb begin
         case (s)
-            IDLE:   {op, dest, src1, src2, modwait} = {NOP,  R00, R00, R00, 1'b0};
-            ZERO:   {op, dest, src1, src2, modwait} = {SUB,  R00, R00, R00, 1'b1};
-            SORT1:  {op, dest, src1, src2, modwait} = {COPY, R01, R02, R00, 1'b1};
-            SORT2:  {op, dest, src1, src2, modwait} = {COPY, R02, R03, R00, 1'b1};
-            SORT3:  {op, dest, src1, src2, modwait} = {COPY, R03, R04, R00, 1'b1};
-            SORT4:  {op, dest, src1, src2, modwait} = {COPY, R04, R05, R00, 1'b1};
-            MUL1:   {op, dest, src1, src2, modwait} = {MUL,  R10, R01, R06, 1'b1};
-            ADD1:   {op, dest, src1, src2, modwait} = {ADD,  R00, R00, R10, 1'b1};
-            MUL2:   {op, dest, src1, src2, modwait} = {MUL,  R10, R02, R07, 1'b1};
-            SUB2:   {op, dest, src1, src2, modwait} = {SUB,  R00, R00, R10, 1'b1};
-            MUL3:   {op, dest, src1, src2, modwait} = {MUL,  R10, R03, R08, 1'b1};
-            ADD3:   {op, dest, src1, src2, modwait} = {ADD,  R00, R00, R10, 1'b1};
-            MUL4:   {op, dest, src1, src2, modwait} = {MUL,  R10, R04, R09, 1'b1};
-            SUB4:   {op, dest, src1, src2, modwait} = {SUB,  R00, R00, R10, 1'b1};
-            EIDLE:  {op, dest, src1, src2, modwait} = {NOP,  R00, R00, R00, 1'b0};
+            IDLE:   {op, dest, src1, src2} = {NOP,  R00, R00, R00};
+            ZERO:   {op, dest, src1, src2} = {SUB,  R00, R00, R00};
+            SORT1:  {op, dest, src1, src2} = {COPY, R01, R02, R00};
+            SORT2:  {op, dest, src1, src2} = {COPY, R02, R03, R00};
+            SORT3:  {op, dest, src1, src2} = {COPY, R03, R04, R00};
+            SORT4:  {op, dest, src1, src2} = {COPY, R04, R05, R00};
+            MUL1:   {op, dest, src1, src2} = {MUL,  R10, R01, R06};
+            ADD1:   {op, dest, src1, src2} = {ADD,  R00, R00, R10};
+            MUL2:   {op, dest, src1, src2} = {MUL,  R10, R02, R07};
+            SUB2:   {op, dest, src1, src2} = {SUB,  R00, R00, R10};
+            MUL3:   {op, dest, src1, src2} = {MUL,  R10, R03, R08};
+            ADD3:   {op, dest, src1, src2} = {ADD,  R00, R00, R10};
+            MUL4:   {op, dest, src1, src2} = {MUL,  R10, R04, R09};
+            SUB4:   {op, dest, src1, src2} = {SUB,  R00, R00, R10};
+            EIDLE:  {op, dest, src1, src2} = {NOP,  R00, R00, R00};
 
-            LOADD:  {op, dest, src1, src2, modwait} = {LOAD1, R05, R00, R00, 1'b1};
-            LOADC0: {op, dest, src1, src2, modwait} = {LOAD2, R09, R00, R00, 1'b1};
-            LOADC1: {op, dest, src1, src2, modwait} = {LOAD2, R08, R00, R00, 1'b1};
-            LOADC2: {op, dest, src1, src2, modwait} = {LOAD2, R07, R00, R00, 1'b1};
-            LOADC3: {op, dest, src1, src2, modwait} = {LOAD2, R06, R00, R00, 1'b1};
+            LOADD:  {op, dest, src1, src2} = {LOAD1, R05, R00, R00};
+            LOADC0: {op, dest, src1, src2} = {LOAD2, R09, R00, R00};
+            LOADC1: {op, dest, src1, src2} = {LOAD2, R08, R00, R00};
+            LOADC2: {op, dest, src1, src2} = {LOAD2, R07, R00, R00};
+            LOADC3: {op, dest, src1, src2} = {LOAD2, R06, R00, R00};
 
-            default:{op, dest, src1, src2, modwait} = {NOP,   R00, R00, R00, 1'b0};
+            default:{op, dest, src1, src2} = {NOP,   R00, R00, R00};
         endcase
     end
     assign clear = lc;

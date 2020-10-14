@@ -1,0 +1,28 @@
+Q7.1
+data_ready should keep being asserted at least 2 cycles. the data should keep valid for at least 3 cycles. 
+
+Q7.2.1
+compared with the original image, the filtered image lost some details, for example, the lightness of the lightings decreases, and the people has only a vague shape. this is reasonable, since the filter does not allow all the frequency bands go through the filter. only specific frequency bands can pass it. therefore, the content that falls in the reject band was discarded during the processing. 
+
+Q7.2.2
+open a file: 	file = $fopen(filename, "rb"); // rb is the operation permission level. 
+read the file: 	$fscanf(file ,"%c" , dest); // "" is the format of read
+write a file: 	$fwrite(file, "%c", source); // "" is the format or write. 
+size of a file: $ftell(file);
+move the pointer: $fseek(file, ptr, pos);
+close the file: $fclose(file);
+
+Q7.2.3
+%h 	display in hexadecimal
+%d	display in decimal
+%b 	display in binary
+%m 	display hierarchical name
+%s	display as string
+%t 	display as time
+%f 	display 'real' in decimal
+%e 	display 'real' in exponential
+%% 	display % character
+%c	display as a character.
+%o 	display as octal. 
+%u	display unformated data.
+%z 	read data unformatly. 
