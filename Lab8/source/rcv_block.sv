@@ -8,9 +8,12 @@
 module rcv_block (clk, n_rst, 
                   serial_in, data_read, 
                   rx_data, data_ready, 
-                  overrun_error, framing_error);
+                  overrun_error, framing_error,
+                  data_size, bit_period);
     input wire clk, n_rst;
     input wire serial_in, data_read; 
+    input wire [3:0] data_size;
+    input wire [13:0] bit_period;
     output wire [7:0] rx_data;
     output wire data_ready;
     output wire overrun_error, framing_error; 
@@ -45,7 +48,9 @@ module rcv_block (clk, n_rst,
     timer tm0 (.clk(clk), .n_rst(n_rst), 
                .enable_timer(timer_en), 
                .shift_enable(shift_en), 
-               .packet_done(done)
+               .packet_done(done), 
+               .data_size(data_size), 
+               .bit_period(bit_period)
     );
 
     stop_bit_chk det1 (.clk(clk),
