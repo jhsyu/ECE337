@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////
 // Created by: Synopsys DC Expert(TM) in wire load mode
 // Version   : K-2015.06-SP1
-// Date      : Tue Oct 20 21:46:20 2020
+// Date      : Wed Oct 21 02:26:46 2020
 /////////////////////////////////////////////////////////////
 
 
@@ -17,22 +17,22 @@ module apb_slave ( clk, n_rst, rx_data, data_ready, overrun_error,
   input clk, n_rst, data_ready, overrun_error, framing_error, psel, penable,
          pwrite;
   output data_read, pslverr;
-  wire   n106, n109, n112, n115, n118, n121, n124, n127, n1, n2, n3, n4, n5,
-         n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16, n17, n18, n19, n20,
-         n21, n22, n23, n24, n25, n26, n27, n28, n29, n30, n31, n32, n33, n34,
-         n35, n36, n37, n38, n39, n40, n41, n42, n43, n44, n45, n46, n47, n48,
-         n49, n50, n51, n52, n53, n54, n55, n56, n57, n58, n59, n60, n61, n62,
-         n63, n64, n65, n66, n67, n68, n69, n70, n71, n72, n73, n74, n75, n76,
-         n77, n78, n79, n80, n81, n82, n83, n84, n85, n86, n87, n88, n89, n90,
-         n91, n92, n93, n94, n95, n96, n97, n98, n99;
+  wire   n106, n109, n112, n115, n118, n121, n124, n127, n149, n1, n2, n3, n4,
+         n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16, n17, n18, n19,
+         n20, n21, n22, n23, n24, n25, n26, n27, n28, n29, n30, n31, n32, n33,
+         n34, n35, n36, n37, n38, n39, n40, n41, n42, n43, n44, n45, n46, n47,
+         n48, n49, n50, n51, n52, n53, n54, n55, n56, n57, n58, n59, n60, n61,
+         n62, n63, n64, n65, n66, n67, n68, n69, n70, n71, n72, n73, n74, n75,
+         n76, n77, n78, n79, n80, n81, n82, n83, n84, n85, n86, n87, n88, n89,
+         n90, n91, n92, n93, n94, n95, n96, n97, n98, n99;
   wire   [7:6] bit_period_reg1;
   wire   [7:0] next_prdata_reg;
   wire   [7:0] data_buffer_reg;
   wire   [7:0] next_bit_period_reg0;
   wire   [7:0] next_bit_period_reg1;
   wire   [7:0] next_data_size_reg;
-  assign data_read = 1'b0;
 
+  DFFSR data_read_reg ( .D(n149), .CLK(clk), .R(n_rst), .S(1'b1), .Q(data_read) );
   DFFSR \data_size_reg_reg[3]  ( .D(next_data_size_reg[3]), .CLK(clk), .R(
         n_rst), .S(1'b1), .Q(data_size[3]) );
   DFFSR \data_size_reg_reg[2]  ( .D(next_data_size_reg[2]), .CLK(clk), .R(
@@ -224,23 +224,24 @@ module apb_slave ( clk, n_rst, rx_data, data_ready, overrun_error,
   NAND2X1 U111 ( .A(n59), .B(paddr[2]), .Y(n83) );
   INVX1 U112 ( .A(paddr[0]), .Y(n59) );
   NAND3X1 U113 ( .A(penable), .B(psel), .C(pwrite), .Y(n2) );
-  INVX1 U114 ( .A(n84), .Y(n127) );
-  MUX2X1 U115 ( .B(data_buffer_reg[7]), .A(rx_data[7]), .S(data_ready), .Y(n84) );
-  INVX1 U116 ( .A(n85), .Y(n124) );
-  MUX2X1 U117 ( .B(data_buffer_reg[6]), .A(rx_data[6]), .S(data_ready), .Y(n85) );
-  INVX1 U118 ( .A(n86), .Y(n121) );
-  MUX2X1 U119 ( .B(data_buffer_reg[5]), .A(rx_data[5]), .S(data_ready), .Y(n86) );
-  INVX1 U120 ( .A(n87), .Y(n118) );
-  MUX2X1 U121 ( .B(data_buffer_reg[4]), .A(rx_data[4]), .S(data_ready), .Y(n87) );
-  INVX1 U122 ( .A(n88), .Y(n115) );
-  MUX2X1 U123 ( .B(data_buffer_reg[3]), .A(rx_data[3]), .S(data_ready), .Y(n88) );
-  INVX1 U124 ( .A(n89), .Y(n112) );
-  MUX2X1 U125 ( .B(data_buffer_reg[2]), .A(rx_data[2]), .S(data_ready), .Y(n89) );
-  INVX1 U126 ( .A(n90), .Y(n109) );
-  MUX2X1 U127 ( .B(data_buffer_reg[1]), .A(rx_data[1]), .S(data_ready), .Y(n90) );
-  MUX2X1 U128 ( .B(n46), .A(n91), .S(data_ready), .Y(n106) );
-  INVX1 U129 ( .A(rx_data[0]), .Y(n91) );
-  INVX1 U130 ( .A(data_buffer_reg[0]), .Y(n46) );
+  OR2X1 U114 ( .A(data_read), .B(data_ready), .Y(n149) );
+  INVX1 U115 ( .A(n84), .Y(n127) );
+  MUX2X1 U116 ( .B(data_buffer_reg[7]), .A(rx_data[7]), .S(data_ready), .Y(n84) );
+  INVX1 U117 ( .A(n85), .Y(n124) );
+  MUX2X1 U118 ( .B(data_buffer_reg[6]), .A(rx_data[6]), .S(data_ready), .Y(n85) );
+  INVX1 U119 ( .A(n86), .Y(n121) );
+  MUX2X1 U120 ( .B(data_buffer_reg[5]), .A(rx_data[5]), .S(data_ready), .Y(n86) );
+  INVX1 U121 ( .A(n87), .Y(n118) );
+  MUX2X1 U122 ( .B(data_buffer_reg[4]), .A(rx_data[4]), .S(data_ready), .Y(n87) );
+  INVX1 U123 ( .A(n88), .Y(n115) );
+  MUX2X1 U124 ( .B(data_buffer_reg[3]), .A(rx_data[3]), .S(data_ready), .Y(n88) );
+  INVX1 U125 ( .A(n89), .Y(n112) );
+  MUX2X1 U126 ( .B(data_buffer_reg[2]), .A(rx_data[2]), .S(data_ready), .Y(n89) );
+  INVX1 U127 ( .A(n90), .Y(n109) );
+  MUX2X1 U128 ( .B(data_buffer_reg[1]), .A(rx_data[1]), .S(data_ready), .Y(n90) );
+  MUX2X1 U129 ( .B(n46), .A(n91), .S(data_ready), .Y(n106) );
+  INVX1 U130 ( .A(rx_data[0]), .Y(n91) );
+  INVX1 U131 ( .A(data_buffer_reg[0]), .Y(n46) );
 endmodule
 
 
@@ -362,7 +363,7 @@ module rcu ( clk, n_rst, start_bit_detected, packet_done, framing_error,
 endmodule
 
 
-module flex_counter_NUM_CNT_BITS14_DW01_inc_0 ( A, SUM );
+module flex_counter_000e_DW01_inc_0 ( A, SUM );
   input [13:0] A;
   output [13:0] SUM;
 
@@ -385,8 +386,8 @@ module flex_counter_NUM_CNT_BITS14_DW01_inc_0 ( A, SUM );
 endmodule
 
 
-module flex_counter_NUM_CNT_BITS14 ( clk, n_rst, clear, count_enable, 
-        rollover_val, count_out, rollover_flag );
+module flex_counter_000e ( clk, n_rst, clear, count_enable, rollover_val, 
+        count_out, rollover_flag );
   input [13:0] rollover_val;
   output [13:0] count_out;
   input clk, n_rst, clear, count_enable;
@@ -428,8 +429,8 @@ module flex_counter_NUM_CNT_BITS14 ( clk, n_rst, clear, count_enable,
   DFFSR \count_out_reg[10]  ( .D(\eq_43/A[10] ), .CLK(clk), .R(n_rst), .S(1'b1), .Q(count_out[10]) );
   DFFSR rollover_flag_reg ( .D(N21), .CLK(clk), .R(n_rst), .S(1'b1), .Q(n97)
          );
-  flex_counter_NUM_CNT_BITS14_DW01_inc_0 add_41 ( .A(count_out), .SUM({N20, 
-        N19, N18, N17, N16, N15, N14, N13, N12, N11, N10, N9, N8, N7}) );
+  flex_counter_000e_DW01_inc_0 add_41 ( .A(count_out), .SUM({N20, N19, N18, 
+        N17, N16, N15, N14, N13, N12, N11, N10, N9, N8, N7}) );
   BUFX2 U5 ( .A(n97), .Y(rollover_flag) );
   BUFX2 U6 ( .A(n26), .Y(n2) );
   AND2X1 U20 ( .A(n3), .B(n4), .Y(N21) );
@@ -591,14 +592,22 @@ module timer ( clk, n_rst, enable_timer, shift_enable, packet_done, data_size,
   input [13:0] bit_period;
   input clk, n_rst, enable_timer;
   output shift_enable, packet_done;
-  wire   n1;
+  wire   \_2_net_[3] , \_2_net_[2] , \_2_net_[1] , n1, n2, n3, n4, n5;
 
-  flex_counter_NUM_CNT_BITS14 clk_divder ( .clk(clk), .n_rst(n_rst), .clear(n1), .count_enable(enable_timer), .rollover_val(bit_period), .rollover_flag(
-        shift_enable) );
-  flex_counter_NUM_CNT_BITS4 controller ( .clk(clk), .n_rst(n_rst), .clear(n1), 
-        .count_enable(shift_enable), .rollover_val(data_size), .rollover_flag(
-        packet_done) );
-  INVX1 U1 ( .A(enable_timer), .Y(n1) );
+  flex_counter_000e clk_divder ( .clk(clk), .n_rst(n_rst), .clear(n4), 
+        .count_enable(enable_timer), .rollover_val(bit_period), 
+        .rollover_flag(shift_enable) );
+  flex_counter_NUM_CNT_BITS4 controller ( .clk(clk), .n_rst(n_rst), .clear(n4), 
+        .count_enable(shift_enable), .rollover_val({\_2_net_[3] , \_2_net_[2] , 
+        \_2_net_[1] , n5}), .rollover_flag(packet_done) );
+  INVX1 U2 ( .A(enable_timer), .Y(n4) );
+  INVX1 U3 ( .A(data_size[0]), .Y(n5) );
+  XOR2X1 U4 ( .A(data_size[3]), .B(n1), .Y(\_2_net_[3] ) );
+  NOR2X1 U5 ( .A(n2), .B(n3), .Y(n1) );
+  XOR2X1 U6 ( .A(n3), .B(n2), .Y(\_2_net_[2] ) );
+  NAND2X1 U7 ( .A(data_size[1]), .B(data_size[0]), .Y(n2) );
+  INVX1 U8 ( .A(data_size[2]), .Y(n3) );
+  XOR2X1 U9 ( .A(data_size[1]), .B(data_size[0]), .Y(\_2_net_[1] ) );
 endmodule
 
 
@@ -625,13 +634,13 @@ module rx_data_buff ( clk, n_rst, load_buffer, packet_data, data_read, rx_data,
   wire   n30, n31, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n15, n17, n19,
          n21, n23, n25, n27, n29;
 
-  DFFSR \rx_data_reg[7]  ( .D(n15), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
+  DFFSR \rx_data_reg[7]  ( .D(n17), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
         rx_data[7]) );
-  DFFSR \rx_data_reg[6]  ( .D(n17), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
+  DFFSR \rx_data_reg[6]  ( .D(n15), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
         rx_data[6]) );
-  DFFSR \rx_data_reg[5]  ( .D(n19), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
+  DFFSR \rx_data_reg[5]  ( .D(n21), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
         rx_data[5]) );
-  DFFSR \rx_data_reg[4]  ( .D(n21), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
+  DFFSR \rx_data_reg[4]  ( .D(n19), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
         rx_data[4]) );
   DFFSR \rx_data_reg[3]  ( .D(n23), .CLK(clk), .R(1'b1), .S(n_rst), .Q(
         rx_data[3]) );
@@ -646,13 +655,13 @@ module rx_data_buff ( clk, n_rst, load_buffer, packet_data, data_read, rx_data,
   DFFSR overrun_error_reg ( .D(n30), .CLK(clk), .R(n_rst), .S(1'b1), .Q(
         overrun_error) );
   INVX1 U3 ( .A(n1), .Y(n15) );
-  MUX2X1 U4 ( .B(rx_data[7]), .A(packet_data[7]), .S(load_buffer), .Y(n1) );
+  MUX2X1 U4 ( .B(rx_data[6]), .A(packet_data[6]), .S(load_buffer), .Y(n1) );
   INVX1 U5 ( .A(n2), .Y(n17) );
-  MUX2X1 U6 ( .B(rx_data[6]), .A(packet_data[6]), .S(load_buffer), .Y(n2) );
+  MUX2X1 U6 ( .B(rx_data[7]), .A(packet_data[7]), .S(load_buffer), .Y(n2) );
   INVX1 U7 ( .A(n3), .Y(n19) );
-  MUX2X1 U8 ( .B(rx_data[5]), .A(packet_data[5]), .S(load_buffer), .Y(n3) );
+  MUX2X1 U8 ( .B(rx_data[4]), .A(packet_data[4]), .S(load_buffer), .Y(n3) );
   INVX1 U9 ( .A(n4), .Y(n21) );
-  MUX2X1 U10 ( .B(rx_data[4]), .A(packet_data[4]), .S(load_buffer), .Y(n4) );
+  MUX2X1 U10 ( .B(rx_data[5]), .A(packet_data[5]), .S(load_buffer), .Y(n4) );
   INVX1 U11 ( .A(n5), .Y(n23) );
   MUX2X1 U12 ( .B(rx_data[3]), .A(packet_data[3]), .S(load_buffer), .Y(n5) );
   INVX1 U13 ( .A(n6), .Y(n25) );
@@ -676,13 +685,16 @@ module rcv_block ( clk, n_rst, serial_in, data_read, rx_data, data_ready,
   input [13:0] bit_period;
   input clk, n_rst, serial_in, data_read;
   output data_ready, overrun_error, framing_error;
-  wire   start, shift_en, stop, done, sbc_clr, sbc_en, ld_buf, timer_en;
-  wire   [7:0] packet_data;
+  wire   start, shift_en, stop, done, sbc_clr, sbc_en, ld_buf, timer_en, n1,
+         n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16,
+         n17, n18, n19, n20;
+  wire   [7:0] packet_data_in;
+  wire   [7:0] packet_data_out;
 
   start_bit_det det0 ( .clk(clk), .n_rst(n_rst), .serial_in(serial_in), 
         .start_bit_detected(start) );
   sr_9bit sr0 ( .clk(clk), .n_rst(n_rst), .shift_strobe(shift_en), .serial_in(
-        serial_in), .packet_data(packet_data), .stop_bit(stop) );
+        serial_in), .packet_data(packet_data_out), .stop_bit(stop) );
   rcu cu0 ( .clk(clk), .n_rst(n_rst), .start_bit_detected(start), 
         .packet_done(done), .framing_error(framing_error), .sbc_clear(sbc_clr), 
         .sbc_enable(sbc_en), .load_buffer(ld_buf), .enable_timer(timer_en) );
@@ -692,8 +704,41 @@ module rcv_block ( clk, n_rst, serial_in, data_read, rx_data, data_ready,
   stop_bit_chk det1 ( .clk(clk), .n_rst(n_rst), .sbc_clear(sbc_clr), 
         .sbc_enable(sbc_en), .stop_bit(stop), .framing_error(framing_error) );
   rx_data_buff buff0 ( .clk(clk), .n_rst(n_rst), .load_buffer(ld_buf), 
-        .packet_data(packet_data), .data_read(data_read), .rx_data(rx_data), 
+        .packet_data(packet_data_in), .data_read(data_read), .rx_data(rx_data), 
         .data_ready(data_ready), .overrun_error(overrun_error) );
+  NOR2X1 U2 ( .A(n1), .B(n2), .Y(packet_data_in[7]) );
+  OAI22X1 U3 ( .A(n2), .B(n3), .C(n1), .D(n4), .Y(packet_data_in[6]) );
+  INVX1 U4 ( .A(packet_data_out[7]), .Y(n2) );
+  OAI22X1 U5 ( .A(n4), .B(n3), .C(n1), .D(n5), .Y(packet_data_in[5]) );
+  INVX1 U6 ( .A(packet_data_out[6]), .Y(n4) );
+  OAI21X1 U7 ( .A(n3), .B(n5), .C(n6), .Y(packet_data_in[4]) );
+  AOI22X1 U8 ( .A(packet_data_out[4]), .B(n7), .C(n8), .D(packet_data_out[7]), 
+        .Y(n6) );
+  INVX1 U9 ( .A(packet_data_out[5]), .Y(n5) );
+  OAI21X1 U10 ( .A(n3), .B(n9), .C(n10), .Y(packet_data_in[3]) );
+  AOI22X1 U11 ( .A(packet_data_out[3]), .B(n7), .C(n8), .D(packet_data_out[6]), 
+        .Y(n10) );
+  INVX1 U12 ( .A(packet_data_out[4]), .Y(n9) );
+  OAI21X1 U13 ( .A(n3), .B(n11), .C(n12), .Y(packet_data_in[2]) );
+  AOI22X1 U14 ( .A(packet_data_out[2]), .B(n7), .C(n8), .D(packet_data_out[5]), 
+        .Y(n12) );
+  INVX1 U15 ( .A(packet_data_out[3]), .Y(n11) );
+  OAI21X1 U16 ( .A(n3), .B(n13), .C(n14), .Y(packet_data_in[1]) );
+  AOI22X1 U17 ( .A(packet_data_out[1]), .B(n7), .C(n8), .D(packet_data_out[4]), 
+        .Y(n14) );
+  INVX1 U18 ( .A(packet_data_out[2]), .Y(n13) );
+  OAI21X1 U19 ( .A(n3), .B(n15), .C(n16), .Y(packet_data_in[0]) );
+  AOI22X1 U20 ( .A(packet_data_out[0]), .B(n7), .C(packet_data_out[3]), .D(n8), 
+        .Y(n16) );
+  INVX1 U21 ( .A(n17), .Y(n8) );
+  INVX1 U22 ( .A(n1), .Y(n7) );
+  NAND2X1 U23 ( .A(n3), .B(n17), .Y(n1) );
+  NAND3X1 U24 ( .A(data_size[2]), .B(data_size[0]), .C(n18), .Y(n17) );
+  NOR2X1 U25 ( .A(data_size[3]), .B(data_size[1]), .Y(n18) );
+  INVX1 U26 ( .A(packet_data_out[1]), .Y(n15) );
+  NAND3X1 U27 ( .A(data_size[1]), .B(data_size[2]), .C(n19), .Y(n3) );
+  NOR2X1 U28 ( .A(data_size[3]), .B(n20), .Y(n19) );
+  INVX1 U29 ( .A(data_size[0]), .Y(n20) );
 endmodule
 
 
@@ -704,18 +749,19 @@ module apb_uart_rx ( clk, n_rst, serial_in, psel, penable, pwrite, paddr,
   output [7:0] prdata;
   input clk, n_rst, serial_in, psel, penable, pwrite;
   output pslverr;
-  wire   data_ready, overrun_error, framing_error;
+  wire   data_ready, overrun_error, framing_error, data_read;
   wire   [7:0] rx_data;
   wire   [3:0] data_size;
   wire   [13:0] bit_period;
 
   apb_slave apb_slv ( .clk(clk), .n_rst(n_rst), .rx_data(rx_data), 
         .data_ready(data_ready), .overrun_error(overrun_error), 
-        .framing_error(framing_error), .psel(psel), .penable(penable), 
-        .pwrite(pwrite), .paddr(paddr), .prdata(prdata), .pwdata(pwdata), 
-        .pslverr(pslverr), .data_size(data_size), .bit_period(bit_period) );
+        .framing_error(framing_error), .data_read(data_read), .psel(psel), 
+        .penable(penable), .pwrite(pwrite), .paddr(paddr), .prdata(prdata), 
+        .pwdata(pwdata), .pslverr(pslverr), .data_size(data_size), 
+        .bit_period(bit_period) );
   rcv_block uart0 ( .clk(clk), .n_rst(n_rst), .serial_in(serial_in), 
-        .data_read(1'b0), .rx_data(rx_data), .data_ready(data_ready), 
+        .data_read(data_read), .rx_data(rx_data), .data_ready(data_ready), 
         .overrun_error(overrun_error), .framing_error(framing_error), 
         .data_size(data_size), .bit_period(bit_period) );
 endmodule

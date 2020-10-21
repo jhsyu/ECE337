@@ -21,12 +21,12 @@ localparam DATA_MAX_BIT    = DATA_WIDTH_BITS - 1;
 localparam ADDR_MAX_BIT    = ADDR_WIDTH - 1;
 
 // Define our address mapping scheme via constants
-localparam ADDR_DATA_SR  = 3'd0;
-localparam ADDR_ERROR_SR = 3'd1;
-localparam ADDR_BIT_CR0  = 3'd2;
-localparam ADDR_BIT_CR1  = ADDR_BIT_CR0 + 1;
-localparam ADDR_DATA_CR  = 3'd4;
-localparam ADDR_RX_DATA  = 3'd6;
+localparam ADDR_DATA_SR  = 3'd0;  // data status
+localparam ADDR_ERROR_SR = 3'd1;  // error status
+localparam ADDR_BIT_CR0  = 3'd2;  // bit_period reg0
+localparam ADDR_BIT_CR1  = 3'd3;  // bit_period reg1
+localparam ADDR_DATA_CR  = 3'd4;  // data_size reg 
+localparam ADDR_RX_DATA  = 3'd6;  // data_buffer
 
 // APB-Slave reset value constants
 // Student TODO: Update these based on the reset values for your config registers
@@ -443,7 +443,7 @@ initial begin
   execute_transactions(1);
 
   //*****************************************************************************
-  // Test Case 3: slave select err test
+  // Test Case 3: read test
   //*****************************************************************************
   tb_test_case     = "slave read test";
   tb_test_case_num = tb_test_case_num + 1;

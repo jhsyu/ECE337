@@ -5,11 +5,13 @@
 // Lab Section: 337-002
 // Version:     1.0  Initial Design Entry
 // Description: .
-module rcv_block (clk, n_rst, 
-                  serial_in, data_read, 
-                  rx_data, data_ready, 
-                  overrun_error, framing_error,
-                  data_size, bit_period);
+module rcv_block (
+    clk, n_rst, 
+    serial_in, data_read, 
+    rx_data, data_ready, 
+    overrun_error, framing_error, 
+    data_size, bit_period        
+);
     input wire clk, n_rst;
     input wire serial_in, data_read; 
     input wire [3:0] data_size;
@@ -23,6 +25,17 @@ module rcv_block (clk, n_rst,
     reg [7:0] packet_data; 
     reg stop;
 
+    logic [7:0] packet_data_out;
+    logic [7:0] packet_data_in;
+
+    always_comb begin
+        packet_data_in = packet_data_out;
+        if(data_size == 3'd5) 
+            packet_data_in = {3'b000, packet_data_out[7:3]};
+        if(data_size == 3'd7)
+            packet_data_in = {1'b0, packet_data_out[7:1]};
+    end
+
 
     start_bit_det det0 (.clk(clk), .n_rst(n_rst),
                         .serial_in(serial_in),
@@ -31,7 +44,7 @@ module rcv_block (clk, n_rst,
 
     sr_9bit sr0 (.clk(clk), .n_rst(n_rst), .shift_strobe(shift_en), 
                 .serial_in(serial_in), 
-                .packet_data(packet_data), .stop_bit(stop)
+                .packet_data(packet_data_out), .stop_bit(stop)
     );
 
     rcu cu0 (.clk(clk), 
@@ -64,7 +77,7 @@ module rcv_block (clk, n_rst,
     rx_data_buff buff0 (.clk(clk),
                         .n_rst(n_rst),
                         .load_buffer(ld_buf),
-                        .packet_data(packet_data),
+                        .packet_data(packet_data_in),
                         .data_read(data_read),
                         .rx_data(rx_data),
                         .data_ready(data_ready),

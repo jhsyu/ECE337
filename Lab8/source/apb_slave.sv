@@ -114,7 +114,7 @@ module apb_slave(
 
     always_comb begin   // update data_buffer
         if (data_ready) begin
-            next_data_read = 1'b0;
+            next_data_read = 1'b1;
             next_data_buffer_reg = rx_data;
         end
         else begin
