@@ -344,7 +344,7 @@ initial begin
   // Test Case 1: 10 cycles, 8 bit width 
   //*****************************************************************************
   // Update Navigation Info
-  tb_test_case     = "Read from Bit Period Config Register after setting it";
+  tb_test_case     = "10 cycles, 8 bit width";
   tb_test_case_num = tb_test_case_num + 1;
 
   // Reset the DUT to isolate from prior to isolate from prior test case
@@ -358,11 +358,9 @@ initial begin
   // check configuration. 
   enqueue_transaction(1'b1, READ, ADDR_BIT_CR0, tb_test_bit_period[7:0], 1'b0);
   execute_transactions(1);
-  check_read_outputs("check for pit period 0", tb_test_bit_period[7:0]); //bit period 0
 
   enqueue_transaction(1'b1, READ, ADDR_BIT_CR1, {2'b00, tb_test_bit_period[13:8]}, 1'b0);
   execute_transactions(1);
-  check_read_outputs("check for pit period 1", tb_test_bit_period[13:8]); //bit period 1
 
   // send a stream to uart. 
   tb_test_data       = 8'b11110000;
@@ -370,9 +368,259 @@ initial begin
   send_packet(tb_test_data, 8, 10);
 
   // check the read value
-  #(2 * 10 * CLK_PERIOD);
+  #(CLK_PERIOD);
   enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
   execute_transactions(1);
+  #(0.1);
+
+
+
+  //*****************************************************************************
+  // Test Case 2: 100 cycles, 8 bit width 
+  //*****************************************************************************
+  // Update Navigation Info
+  tb_test_case     = "100 cycles, 8 bit width";
+  tb_test_case_num = tb_test_case_num + 1;
+
+  // Reset the DUT to isolate from prior to isolate from prior test case
+  reset_dut();
+
+  // configure the slave.
+  tb_test_bit_period = 14'd100;
+  tb_test_data_size = 4'd8;
+  configure(tb_test_bit_period, tb_test_data_size);
+
+  // check configuration. 
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR0, tb_test_bit_period[7:0], 1'b0);
+  execute_transactions(1);
+
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR1, {2'b00, tb_test_bit_period[13:8]}, 1'b0);
+  execute_transactions(1);
+
+  // send a stream to uart. 
+  tb_test_data       = 8'b11010101;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 8, 100);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+
+
+  //*****************************************************************************
+  // Test Case 3: 100 cycles, 5 bit width 
+  //*****************************************************************************
+  // Update Navigation Info
+  tb_test_case     = "100 cycles, 5 bit width";
+  tb_test_case_num = tb_test_case_num + 1;
+
+  // Reset the DUT to isolate from prior to isolate from prior test case
+  reset_dut();
+
+  // configure the slave.
+  tb_test_bit_period = 14'd100;
+  tb_test_data_size = 4'd5;
+  configure(tb_test_bit_period, tb_test_data_size);
+
+  // check configuration. 
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR0, tb_test_bit_period[7:0], 1'b0);
+  execute_transactions(1);
+
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR1, {2'b00, tb_test_bit_period[13:8]}, 1'b0);
+  execute_transactions(1);
+
+  // send a stream to uart. 
+  tb_test_data       = 5'b11010;
+  tb_test_stop_bit   = 1'b1;
+  send_packet({3'b0, tb_test_data}, 5, 100);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+
+
+  //*****************************************************************************
+  // Test Case 4: 10 cycles, 8 bit width, multiple packages
+  //*****************************************************************************
+  // Update Navigation Info
+  tb_test_case     = "10 cycles, 8 bit width, multiple packages";
+  tb_test_case_num = tb_test_case_num + 1;
+
+  // Reset the DUT to isolate from prior to isolate from prior test case
+  reset_dut();
+
+  // configure the slave.
+  tb_test_bit_period = 14'd10;
+  tb_test_data_size = 4'd8;
+  configure(tb_test_bit_period, tb_test_data_size);
+
+  // check configuration. 
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR0, tb_test_bit_period[7:0], 1'b0);
+  execute_transactions(1);
+
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR1, {2'b00, tb_test_bit_period[13:8]}, 1'b0);
+  execute_transactions(1);
+
+  // send a stream to uart. 
+  tb_test_data       = 8'b11110000;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 8, 10);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+  
+  // send a stream to uart. 
+  tb_test_data       = 8'b11010101;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 8, 10);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+  
+  // send a stream to uart. 
+  tb_test_data       = 8'b01110001;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 8, 10);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+  #(0.1);
+  
+    // send a stream to uart. 
+  tb_test_data       = 8'b11010101;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 8, 10);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+
+
+  //*****************************************************************************
+  // Test Case 5: 100 cycles, 5 bit width, multiple packages
+  //*****************************************************************************
+  // Update Navigation Info
+  tb_test_case     = "100 cycles, 5 bit width, multiple packages";
+  tb_test_case_num = tb_test_case_num + 1;
+
+  // Reset the DUT to isolate from prior to isolate from prior test case
+  reset_dut();
+
+  // configure the slave.
+  tb_test_bit_period = 14'd100;
+  tb_test_data_size = 4'd5;
+  configure(tb_test_bit_period, tb_test_data_size);
+
+  // check configuration. 
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR0, tb_test_bit_period[7:0], 1'b0);
+  execute_transactions(1);
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR1, {2'b00, tb_test_bit_period[13:8]}, 1'b0);
+  execute_transactions(1);
+
+  // send a stream to uart. 
+  tb_test_data       = 5'b01110;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 5, 100);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+
+  // send a stream to uart. 
+  tb_test_data       = 8'b11010;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 5, 100);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+  // send a stream to uart. 
+  tb_test_data       = 8'b10110;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 5, 100);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+
+  // send a stream to uart. 
+  tb_test_data       = 8'b11010;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 5, 100);
+
+  // check the read value
+  #(CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+
+
+  //*****************************************************************************
+  // Test Case 4: 10 cycles, 8 bit width, multiple packages, overrun. 
+  //*****************************************************************************
+  // Update Navigation Info
+  tb_test_case     = "10 cycles, 8 bit width, multiple packages, overrun";
+  tb_test_case_num = tb_test_case_num + 1;
+
+  // Reset the DUT to isolate from prior to isolate from prior test case
+  reset_dut();
+
+  // configure the slave.
+  tb_test_bit_period = 14'd10;
+  tb_test_data_size = 4'd8;
+  configure(tb_test_bit_period, tb_test_data_size);
+
+  // check configuration. 
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR0, tb_test_bit_period[7:0], 1'b0);
+  execute_transactions(1);
+
+  enqueue_transaction(1'b1, READ, ADDR_BIT_CR1, {2'b00, tb_test_bit_period[13:8]}, 1'b0);
+  execute_transactions(1);
+
+  // send a stream to uart. 
+  tb_test_data       = 8'b11110000;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 8, 10);
+
+  // check the read value
+  // wait, and not read the data.
+  #(0.1);
+  //enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  //execute_transactions(1);
+  
+  // send a stream to uart. 
+  tb_test_data       = 8'b11010101;
+  tb_test_stop_bit   = 1'b1;
+  send_packet(tb_test_data, 8, 10);
+  #(CLK_PERIOD);
+
+  // check error status. 
+  enqueue_transaction(1'b1, READ, ADDR_ERROR_SR, 8'd2, 1'b0);
+  execute_transactions(1);
+
+  // check the read value
+  enqueue_transaction(1'b1, READ, ADDR_RX_DATA, tb_test_data, 1'b0);
+  execute_transactions(1);
+
+  // check error status. 
+  enqueue_transaction(1'b1, READ, ADDR_ERROR_SR, 8'd0, 1'b0);
+  execute_transactions(1);
+
+
+// framing error case
+
+
 end
 
 endmodule

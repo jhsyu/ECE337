@@ -44,20 +44,16 @@ module apb_slave(
 
     // selection lines.
     logic [2:0] read_sel, write_sel;
+    // prdata reg. 
+    logic [7:0] next_prdata;
 
-    // prdata registers. 
-    logic [7:0] prdata_reg;
-    logic [7:0] next_prdata_reg;
-
-    // data_read strobe. 
-    logic next_data_read;
 
     // output logic
     assign data_status_reg = {7'b0, data_ready}; 
     assign bit_period = {bit_period_reg1 [5:0], bit_period_reg0};
     assign data_size = data_size_reg;
-    assign prdata = prdata_reg;
-
+    assign data_read = (psel && penable && (~pwrite)) ? 1'b1 : 1'b0;
+ 
     // error logic
     always_comb begin
         error_status = 8'd0;
@@ -79,7 +75,7 @@ module apb_slave(
                 default:pslverr = 1'b1;
             endcase   
        end 
-       else if (psel && ~pwrite) begin // read mode
+       else if (psel && ~pwrite && psel) begin // read mode
             case (paddr)
                 3'd7:   pslverr = 1'b1;
                 default:read_sel = paddr;
@@ -87,18 +83,6 @@ module apb_slave(
        end
     end    
 
-    // read data. 
-    always_comb begin
-        case (read_sel)
-            3'd0:   next_prdata_reg = data_status_reg;
-            3'd1:   next_prdata_reg = error_status;
-            3'd2:   next_prdata_reg = bit_period_reg0;
-            3'd3:   next_prdata_reg = bit_period_reg1;
-            3'd4:   next_prdata_reg = data_size_reg;
-            3'd6:   next_prdata_reg = data_buffer_reg;
-            default:next_prdata_reg = prdata_reg;
-        endcase
-    end 
 
     // write data. 
     always_comb begin
@@ -114,11 +98,9 @@ module apb_slave(
 
     always_comb begin   // update data_buffer
         if (data_ready) begin
-            next_data_read = 1'b1;
             next_data_buffer_reg = rx_data;
         end
         else begin
-            next_data_read = data_read;
             next_data_buffer_reg = data_buffer_reg;
         end
     end
@@ -126,21 +108,42 @@ module apb_slave(
     // update registers. 
     always_ff @(posedge clk, negedge n_rst) begin
         if (~n_rst) begin
-            prdata_reg <= 0;
             data_size_reg <= 0;
             bit_period_reg0 <= 0;
             bit_period_reg1 <= 0;
             data_buffer_reg <= 0;
-            data_read <= 0;
         end
         else begin
-            prdata_reg <= next_prdata_reg;
             data_size_reg <= next_data_size_reg;
             bit_period_reg0 <= next_bit_period_reg0;
             bit_period_reg1 <= next_bit_period_reg1;
             data_buffer_reg <= next_data_buffer_reg;
-            data_read <= next_data_read;
         end
     end
+
+    // read data. 
+    always_ff @(posedge clk, negedge n_rst, posedge penable, negedge psel) begin
+        if (~n_rst) begin
+            prdata <= 8'b0;
+        end
+        else if(penable)begin
+            prdata <= next_prdata;
+        end
+        else if(~psel) begin
+            prdata <= 8'b0;
+        end
+        else prdata <= 8'b0;
+    end
+    always_comb begin
+        case (read_sel)
+            3'd0:   next_prdata = data_status_reg;
+            3'd1:   next_prdata = error_status;
+            3'd2:   next_prdata = bit_period_reg0;
+            3'd3:   next_prdata = bit_period_reg1;
+            3'd4:   next_prdata = data_size_reg;
+            3'd6:   next_prdata = data_buffer_reg;
+            default:next_prdata = 8'b0;
+        endcase
+    end 
 
 endmodule

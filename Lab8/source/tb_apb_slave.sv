@@ -431,7 +431,7 @@ initial begin
   tb_expected_data_size  = tb_data_size;
   // check_outputs("overrun error");
 
-  $info("fromming err test");
+  $info("framing err test");
   // Enque the needed transactions (Overall period of 1000 clocks)
   tb_rx_data = 8'b10000111;
   tb_framing_error = 0;
@@ -441,6 +441,17 @@ initial begin
   tb_framing_error = 1;
   enqueue_transaction(1'b1, 1'b0, ADDR_ERROR_SR, 8'd1, 1'b0);
   execute_transactions(1);
+
+  // write data buffer - pslverr test. 
+  enqueue_transaction(1'b1, 1'b1, ADDR_RX_DATA, 8'd1, 1'b1);
+  execute_transactions(1);
+  // write error status reg - pslverr
+  enqueue_transaction(1'b1, 1'b1, ADDR_ERROR_SR, 8'd1, 1'b1);
+  execute_transactions(1);
+  // write data status reg - pslverr
+  enqueue_transaction(1'b1, 1'b1, ADDR_DATA_SR, 8'd1, 1'b1);
+  execute_transactions(1);
+ 
 
   //*****************************************************************************
   // Test Case 3: read test
@@ -464,10 +475,19 @@ initial begin
   tb_rx_data = 8'b10000111;
   tb_data_ready = 1'b1;
   #(CLK_PERIOD);
+  // read status reg
+  enqueue_transaction(1'b1, 1'b0, ADDR_DATA_SR, 8'd1, 1'b0);
+  execute_transactions(1);
   tb_data_ready = 1'b0;
 
+  // read data buffer
   enqueue_transaction(1'b1, 1'b0, ADDR_RX_DATA, tb_rx_data, 1'b0);
   execute_transactions(1);
+
+
+
+
+  reset_dut();
 
 end
 
