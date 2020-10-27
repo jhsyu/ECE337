@@ -17,26 +17,15 @@ module fir_filter(clk, n_reset,
     output reg one_k_samples, modwait, err;
     output reg [15:0] fir_out; 
 
-    wire dr, lc, overflow, clear, cnt_up;
+    wire overflow, clear, cnt_up;
     wire [16:0] reg_out;
     wire [2:0] op;
     wire [3:0] dest, src1, src2;
-    // synchoronizers. 
-    sync_low sync_dr (
-        .clk(clk), .n_rst(n_reset), 
-        .async_in(data_ready), 
-        .sync_out(dr)
-    );
 
-    sync_low sync_lc (
-        .clk(clk), .n_rst(n_reset), 
-        .async_in(load_coeff), 
-        .sync_out(lc)
-    );
 
     // controller unit. 
     controller CU (
-        .clk(clk), .n_rst(n_reset), .dr(dr), .lc(lc), 
+        .clk(clk), .n_rst(n_reset), .dr(data_ready), .lc(load_coeff), 
         .overflow(overflow), .cnt_up(cnt_up), .clear(clear), 
         .modwait(modwait),  .err(err),
         .op(op), .src1(src1), .src2(src2), .dest(dest)
