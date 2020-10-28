@@ -1,14 +1,14 @@
 // $Id: $
-// File name:   tb_ahb_lite_slave.sv
-// Created:     10/1/2018
-// Author:      Tim Pritchett
-// Lab Section: 9999
+// File name:   tb_ahb_lite_fir_filter.sv
+// Created:     10/27/2020
+// Author:      Jiahao Xu
+// Lab Section: 337-002
 // Version:     1.0  Initial Design Entry
-// Description: Starter bus model based test bench for the AHB-Lite-slave module
+// Description: .
 
 `timescale 1ns / 10ps
 
-module tb_ahb_lite_slave();
+module tb_ahb_lite_fir_filter();
 
 // Timing related constants
 localparam CLK_PERIOD = 10;
@@ -20,12 +20,6 @@ localparam ADDR_WIDTH      = 4;
 localparam DATA_WIDTH_BITS = DATA_WIDTH * 8;
 localparam DATA_MAX_BIT    = DATA_WIDTH_BITS - 1;
 localparam ADDR_MAX_BIT    = ADDR_WIDTH - 1;
-localparam READ = 1'b0;
-localparam WRITE = 1'b1;
-localparam ERR = 1'b1;
-localparam NOERR = 1'b0;
-localparam BYTE1 = 1'b0;
-localparam BYTE2 = 1'b1;
 
 // Define our address mapping scheme via constants
 localparam ADDR_STATUS      = 4'd0;
@@ -33,13 +27,42 @@ localparam ADDR_STATUS_BUSY = 4'd0;
 localparam ADDR_STATUS_ERR  = 4'd1;
 localparam ADDR_RESULT      = 4'd2;
 localparam ADDR_SAMPLE      = 4'd4;
-localparam ADDR_COEF_START  = 4'd6;  // F0
+localparam ADDR_COEF_F0  = 4'd6;  // F0
+localparam ADDR_COEF_F1 = 4'h8;
+localparam ADDR_COEF_F2 = 4'ha;
+localparam ADDR_COEF_F3 = 4'hc;
 localparam ADDR_COEF_SET    = 4'd14; // Coeff Set Confirmation
+
+// Define our custom test vector type
+typedef struct
+{
+  reg [16:0] coeffs[3:0];
+  reg [16:0] samples[3:0];
+  reg [16:0] results[3:0];
+  reg errors[3:0];
+} testVector;
 
 // AHB-Lite-Slave reset value constants
 // Student TODO: Update these based on the reset values for your config registers
 localparam RESET_COEFF  = '0;
 localparam RESET_SAMPLE = '0;
+
+localparam READ = 1'b0;
+localparam WRITE = 1'b1;
+localparam NOERR = 1'b0;
+localparam ERR = 1'b1;
+localparam SIZE_0 = 1'b0;
+localparam SIZE_1 = 1'b1;
+
+// Test coefficient constants
+localparam COEFF1 		= 16'h8000; // 1.0
+localparam COEFF_5 		= 16'h4000; // 0.5
+localparam COEFF_25 	= 16'h2000; // 0.25
+localparam COEFF_125 	= 16'h1000; // 0.125
+localparam COEFF0  		= 16'h0000; // 0.0
+
+
+testVector tb_test_vectors[];
 
 //*****************************************************************************
 // Declare TB Signals (Bus Model Controls)
@@ -81,7 +104,6 @@ logic                  tb_hwrite;
 logic [DATA_MAX_BIT:0] tb_hwdata;
 logic [DATA_MAX_BIT:0] tb_hrdata;
 logic                  tb_hresp;
-logic                  tb_coeff_clr;
 
 //*****************************************************************************
 // FIR Filter-side Signals
@@ -91,6 +113,7 @@ logic [DATA_MAX_BIT:0]  tb_fir_out;
 logic                   tb_modwait;
 logic                   tb_err;
 logic [1:0]             tb_coeff_num;
+logic                   tb_coeff_clr;
 // To FIR Filter or Coefficient Loader (From DUT)
 logic                   tb_data_ready;
 logic [DATA_MAX_BIT:0]  tb_sample_data;
@@ -149,26 +172,18 @@ ahb_lite_bus BFM (.clk(tb_clk),
 //*****************************************************************************
 // DUT Instance
 //*****************************************************************************
-ahb_lite_slave DUT (.clk(tb_clk), .n_rst(tb_n_rst),
-                    // FIR Filter Operation signals
-                    .fir_out(tb_fir_out),
-                    .modwait(tb_modwait),
-                    .err(tb_err),
-                    .sample_data(tb_sample_data),
-                    .data_ready(tb_data_ready),
-                    .fir_coefficient(tb_fir_coefficient),
-                    .new_coefficient_set(tb_new_coeff_set),
-                    .coefficient_num(tb_coeff_num),
-                    // AHB-Lite-Slave bus signals
-                    .hsel(tb_hsel),
-                    .htrans(tb_htrans),
-                    .haddr(tb_haddr),
-                    .hsize(tb_hsize[0]),
-                    .hwrite(tb_hwrite),
-                    .hwdata(tb_hwdata),
-                    .hrdata(tb_hrdata),
-                    .hresp(tb_hresp), 
-                    .coeff_clr(tb_coeff_clr));
+ahb_lite_fir_filter DUT (
+  .clk(tb_clk), 
+  .n_rst(tb_n_rst),
+  .hsel(tb_hsel),
+  .htrans(tb_htrans),
+  .haddr(tb_haddr),
+  .hsize(tb_hsize[0]),
+  .hwrite(tb_hwrite),
+  .hwdata(tb_hwdata),
+  .hrdata(tb_hrdata),
+  .hresp(tb_hresp)
+);
 
 //*****************************************************************************
 // DUT Related TB Tasks
@@ -195,49 +210,52 @@ begin
 end
 endtask
 
-// Task to cleanly and consistently check DUT output values
-task check_outputs;
-  input string check_tag;
+task configure;
+  input [16:0] coeff [3:0];
 begin
-  tb_mismatch = 1'b0;
-  tb_check    = 1'b1;
-  if(tb_expected_data_ready == tb_data_ready) begin // Check passed
-    $info("Correct 'data_ready' output %s during %s test case", check_tag, tb_test_case);
-  end
-  else begin // Check failed
-    tb_mismatch = 1'b1;
-    $error("Incorrect 'data_ready' output %s during %s test case", check_tag, tb_test_case);
-  end
+  enqueue_transaction(1'b1, WRITE, ADDR_COEF_SET, 16'h0001, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, WRITE, ADDR_COEF_F0, coeff[0], NOERR, SIZE_1);
+  enqueue_transaction(1'b1, WRITE, ADDR_COEF_F1, coeff[1], NOERR, SIZE_1);
+  enqueue_transaction(1'b1, WRITE, ADDR_COEF_F2, coeff[2], NOERR, SIZE_1);
+  enqueue_transaction(1'b1, WRITE, ADDR_COEF_F3, coeff[3], NOERR, SIZE_1);
+  enqueue_transaction(1'b1, WRITE, ADDR_COEF_SET, 16'h0000, NOERR, SIZE_1);
+  execute_transactions(10);
 
-  if(tb_expected_sample == tb_sample_data) begin // Check passed
-    $info("Correct 'sample_data' output %s during %s test case", check_tag, tb_test_case);
-  end
-  else begin // Check failed
-    tb_mismatch = 1'b1;
-    $error("Incorrect 'sample_data' output %s during %s test case", check_tag, tb_test_case);
-  end
-
-  if(tb_expected_new_coeff_set == tb_new_coeff_set) begin // Check passed
-    $info("Correct 'new_coeff_set' output %s during %s test case", check_tag, tb_test_case);
-  end
-  else begin // Check failed
-    tb_mismatch = 1'b1;
-    $error("Incorrect 'new_coeff_set' output %s during %s test case", check_tag, tb_test_case);
-  end
-
-  if(tb_expected_coeff == tb_fir_coefficient) begin // Check passed
-    $info("Correct 'fir_coefficient' output %s during %s test case", check_tag, tb_test_case);
-  end
-  else begin // Check failed
-    tb_mismatch = 1'b1;
-    $error("Incorrect 'fir_coefficient' output %s during %s test case", check_tag, tb_test_case);
-  end
-
-  // Wait some small amount of time so check pulse timing is visible on waves
-  #(0.1);
-  tb_check =1'b0;
 end
 endtask
+
+task test_stream;
+  input testVector tv;
+  integer s;
+begin
+  configure(tv.coeffs);
+  for(s = 0; s < 4; s++) begin
+    test_sample(tv.samples[s], tv.results[s], tv.errors[s]);
+  end
+end
+endtask
+
+
+task test_sample;
+  input [15:0] sample_value;
+		
+  // Expected outputs
+  input [15:0] expected_fir_out;
+  input expected_err;
+begin
+  enqueue_transaction(1'b1, WRITE, ADDR_SAMPLE, sample_value, NOERR, SIZE_1);
+  execute_transactions(1);
+
+  #(CLK_PERIOD * 17);
+
+  enqueue_transaction(1'b1, READ, ADDR_RESULT, expected_fir_out, NOERR, SIZE_1);
+  execute_transactions(1);
+
+  #(CLK_PERIOD);
+
+end
+endtask
+
 
 //*****************************************************************************
 // Bus Model Usage Related TB Tasks
@@ -309,6 +327,7 @@ begin
   tb_modwait   = 1'b0;
   tb_err       = 1'b0;
   tb_coeff_num = 2'd0;
+  tb_coeff_clr = 0;
 end
 endtask
 
@@ -321,6 +340,22 @@ begin
   tb_expected_coeff         = RESET_COEFF;
 end
 endtask
+
+initial
+begin // TODO: Add more standard test cases here
+  // Populate the test vector array to use
+  tb_test_vectors = new[2];
+  // Test case 0
+  tb_test_vectors[0].coeffs	= {COEFF_5, COEFF1, COEFF1, COEFF_5};
+  tb_test_vectors[0].samples	= {16'd100, 16'd100, 16'd100, 16'd100};
+  tb_test_vectors[0].results	= {16'd0, 16'd50, 16'd50 ,16'd50};
+	tb_test_vectors[0].errors		= {1'b0, 1'b0, 1'b0, 1'b0};
+  // Test case 1
+  tb_test_vectors[1].coeffs		= tb_test_vectors[0].coeffs;
+  tb_test_vectors[1].samples	= {16'd1000, 16'd1000, 16'd100, 16'd100};
+  tb_test_vectors[1].results	= {16'd450, 16'd500, 16'd50 ,16'd50};
+  tb_test_vectors[1].errors		= {1'b0, 1'b0, 1'b0, 1'b0};
+end
 
 //*****************************************************************************
 //*****************************************************************************
@@ -371,9 +406,17 @@ initial begin
   // Reset the DUT
   reset_dut();
 
-  // Check outputs for reset state
-  init_expected_outs();
-  check_outputs("after DUT reset");
+  enqueue_transaction(1'b1, READ, ADDR_COEF_F0, 16'b0, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_COEF_F1, 16'b0, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_COEF_F2, 16'b0, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_COEF_F3, 16'b0, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_RESULT, 16'b0, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_STATUS, 16'b0, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_SAMPLE, 16'b0, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_COEF_SET, 16'b0, NOERR, SIZE_1);
+  execute_transactions(8);
+
+
 
   // Give some visual spacing between check and next test case start
   #(CLK_PERIOD * 3);
@@ -386,116 +429,62 @@ initial begin
   tb_test_case_num = tb_test_case_num + 1;
   init_fir_side();
   init_expected_outs();
+
   
   // Reset the DUT to isolate from prior test case
   reset_dut();
 
   // Enqueue the needed transactions (Low Coeff Address => F0, just add 2 x index)
   tb_test_data = 16'd1000; 
-  enqueue_transaction(1'b1, 1'b1, ADDR_SAMPLE, tb_test_data, 1'b0, 1'b1);
+  enqueue_transaction(1'b1, WRITE, ADDR_SAMPLE, tb_test_data, NOERR, SIZE_1);
   
   // Run the transactions via the model
   execute_transactions(1);
 
-  // Check the DUT outputs
-  tb_expected_data_ready    = 1'b1;
-  tb_expected_sample        = tb_test_data;
-  tb_expected_new_coeff_set = 1'b0;
-  tb_expected_coeff         = RESET_COEFF;
-  check_outputs("after attempting to send a sample");
+  enqueue_transaction(1'b1, READ, ADDR_SAMPLE, tb_test_data, NOERR, SIZE_1);
+  execute_transactions(1);
+
+
+  #(CLK_PERIOD * 3);
+
+
+  //*****************************************************************************
+  // Test Case 2: Configure and check Coefficient Value
+  //*****************************************************************************
+  // Update Navigation Info
+  tb_test_case     = "Configure Coeff ";
+  tb_test_case_num = tb_test_case_num + 1;
+  init_fir_side();
+  init_expected_outs();
+
+  // Reset the DUT to isolate from prior test case
+  reset_dut();
+
+  configure(tb_test_vectors[0].coeffs);
 
   // Give some visual spacing between check and next test case start
-  #(CLK_PERIOD * 3);
+  #(CLK_PERIOD * 20);
 
 
-  //*****************************************************************************
-  // Test Case 2: Configure and check a Coefficient Value
-  //*****************************************************************************
-  // Update Navigation Info
-  tb_test_case     = "Configure Coeff F3";
-  tb_test_case_num = tb_test_case_num + 1;
-  init_fir_side();
-  init_expected_outs();
-
-  // Reset the DUT to isolate from prior test case
-  reset_dut();
-
-  // Enqueue the needed transactions (Low Coeff Address => F0, just add 2 x index)
-  tb_test_data = 16'h8000; // Fixed decimal value of 1.0
-  // Enqueue the write
-  enqueue_transaction(1'b1, 1'b1, (ADDR_COEF_START + 6), tb_test_data, 1'b0, 1'b1);
-  // transaction 3
-  enqueue_transaction(1'b1, 1'b0, (ADDR_COEF_START + 6), tb_test_data, 1'b0, 1'b1);
-  // Enqueue the 'check' read
-  
-  // Run the transactions via the model
-  execute_transactions(2);
-  
-
-  // Check the DUT outputs
-  tb_expected_data_ready    = 1'b0;
-  tb_expected_sample        = RESET_SAMPLE;
-  tb_expected_new_coeff_set = 1'b0;
-  tb_expected_coeff         = RESET_COEFF;
-  check_outputs("after attempting to configure F3");
-
-  // Give some visual spacing between check and next test case start
-  #(CLK_PERIOD * 3);
-
-
-  //*****************************************************************************
-  // Test Case 3: coeff_clr test
+ //*****************************************************************************
+  // Test Case 3: send sample test
   //*****************************************************************************
   // Update Navigation Info
-  tb_test_case     = "coeff_clr test";
+  tb_test_case     = "send sample test";
   tb_test_case_num = tb_test_case_num + 1;
   init_fir_side();
   init_expected_outs();
   // Reset the DUT to isolate from prior test case
   reset_dut();
-  $info("test case %d, %s", tb_test_case_num, tb_test_case);
-
-  tb_test_data = 16'h0001;
-  enqueue_transaction(1'b1, WRITE, ADDR_COEF_SET, tb_test_data, NOERR, BYTE1);
-  enqueue_transaction(1'b1, READ, ADDR_COEF_SET, tb_test_data, NOERR, BYTE2);
+  tb_test_data = tb_test_vectors[0].samples[0];
+  enqueue_transaction(1'b1, WRITE, ADDR_SAMPLE, tb_test_data, NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_SAMPLE, tb_test_data, NOERR, SIZE_1);
 
   execute_transactions(2);
-  tb_coeff_clr = 1;
-  #(CLK_PERIOD * 1.5);
-  tb_coeff_clr = 0;
-  enqueue_transaction(1'b1, READ, ADDR_COEF_SET, 16'b0, NOERR, BYTE2);
-  execute_transactions(1);
-  #(CLK_PERIOD * 3);
 
-   //*****************************************************************************
-  // Test Case 4: read status register test
-  //*****************************************************************************
-  // Update Navigation Info
-  tb_test_case     = "read status register test";
-  tb_test_case_num = tb_test_case_num + 1;
-  init_fir_side();
-  init_expected_outs();
-  // Reset the DUT to isolate from prior test case
-  reset_dut();
-  $info("test case %d, %s", tb_test_case_num, tb_test_case);
-
-  $info("read status");
-  tb_err = 1;
-  enqueue_transaction(1'b1, READ, ADDR_STATUS, 16'h0100, NOERR, BYTE2);
-  execute_transactions(1);
-  tb_modwait = 1;
-  enqueue_transaction(1'b1, READ, ADDR_STATUS, 16'h0101, NOERR, BYTE2);
-  execute_transactions(1);
-  tb_err = 0;
-  enqueue_transaction(1'b1, READ, ADDR_STATUS, 16'h0001, NOERR, BYTE2);
-  execute_transactions(1);
-  tb_modwait = 0;
-  enqueue_transaction(1'b1, READ, ADDR_STATUS, 16'h0000, NOERR, BYTE2);
-  execute_transactions(1);
-  #(CLK_PERIOD * 3);
 
   //*****************************************************************************
-  // Test Case 5: write status register err test
+  // Test Case 4: transaction err test
   //*****************************************************************************
   // Update Navigation Info
   tb_test_case     = "write status register err test";
@@ -504,10 +493,25 @@ initial begin
   init_expected_outs();
   // Reset the DUT to isolate from prior test case
   reset_dut();
-  $info("test case %d, %s", tb_test_case_num, tb_test_case);
-  enqueue_transaction(1'b1, WRITE, ADDR_STATUS, 16'h0100, ERR, BYTE2);
-  execute_transactions(1);
-  #(CLK_PERIOD * 3);
+  enqueue_transaction(1'b1, WRITE, ADDR_STATUS, 16'h0100, ERR, SIZE_1);
+  enqueue_transaction(1'b1, WRITE, ADDR_RESULT, 16'h0100, ERR, SIZE_1);
+  enqueue_transaction(1'b1, WRITE, 4'hf, 16'h0, ERR, SIZE_0);
+  execute_transactions(3);
+
+
+  //*****************************************************************************
+  // Test Case 5: vector test
+  //*****************************************************************************
+  // Update Navigation Info
+  tb_test_case     = "vector test";
+  tb_test_case_num = tb_test_case_num + 1;
+  init_fir_side();
+  init_expected_outs();
+  // Reset the DUT to isolate from prior test case
+  reset_dut();
+
+  test_stream(tb_test_vectors[0]);
+
 end
 
 endmodule

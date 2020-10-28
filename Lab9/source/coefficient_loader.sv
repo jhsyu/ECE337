@@ -11,6 +11,7 @@ module coefficient_loader (
     input logic new_coefficient_set, 
     input logic modwait, 
     output logic load_coeff, 
+    output logic coeff_clr,
     output logic [1:0] coefficient_num
 );
     localparam IDLE     = 4'h0;
@@ -22,6 +23,7 @@ module coefficient_loader (
     localparam WAIT2    = 4'h6;
     localparam LOAD3    = 4'h7;
     localparam WAIT3    = 4'h8;
+    localparam DONE     = 4'd9;
 
     logic [3:0] s, next_s;
 
@@ -54,8 +56,10 @@ module coefficient_loader (
             WAIT2:  {load_coeff, coefficient_num} = {1'b0, 2'd2};
             LOAD3:  {load_coeff, coefficient_num} = {1'b1, 2'd3};
             WAIT3:  {load_coeff, coefficient_num} = {1'b0, 2'd3};
+            DONE:   {load_coeff, coefficient_num} = {1'b0, 2'd0};
             default:{load_coeff, coefficient_num} = {1'b0, 2'd0}; 
         endcase
     end
+    assign coeff_clr = (s == DONE) ? 1'b1 : 1'b0;
 
 endmodule
