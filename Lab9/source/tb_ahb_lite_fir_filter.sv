@@ -141,6 +141,15 @@ always begin
   #(CLK_PERIOD/2.0);
 end
 
+// hrdata read module. 
+////logic [15:0] read_reg, next_read_reg; 
+//logic mdwait, next_mdwait;
+//always_ff @ (posedge tb_clk, negedge tb_n_rst) begin
+  //if(~tb_n_rst) read_reg <= '0;
+  //else read_reg <= next_read_reg;
+//end
+//assign next_read_reg = tb_hrdata;
+
 //*****************************************************************************
 // Bus Model Instance
 //*****************************************************************************
@@ -213,13 +222,12 @@ endtask
 task configure;
   input [16:0] coeff [3:0];
 begin
-  enqueue_transaction(1'b1, WRITE, ADDR_COEF_SET, 16'h0001, NOERR, SIZE_1);
   enqueue_transaction(1'b1, WRITE, ADDR_COEF_F0, coeff[0], NOERR, SIZE_1);
   enqueue_transaction(1'b1, WRITE, ADDR_COEF_F1, coeff[1], NOERR, SIZE_1);
   enqueue_transaction(1'b1, WRITE, ADDR_COEF_F2, coeff[2], NOERR, SIZE_1);
   enqueue_transaction(1'b1, WRITE, ADDR_COEF_F3, coeff[3], NOERR, SIZE_1);
-  enqueue_transaction(1'b1, WRITE, ADDR_COEF_SET, 16'h0000, NOERR, SIZE_1);
-  execute_transactions(10);
+  enqueue_transaction(1'b1, WRITE, ADDR_COEF_SET, 16'h0001, NOERR, SIZE_1);
+  execute_transactions(5);
 
 end
 endtask
@@ -229,6 +237,7 @@ task test_stream;
   integer s;
 begin
   configure(tv.coeffs);
+  #(20 * CLK_PERIOD);
   for(s = 0; s < 4; s++) begin
     test_sample(tv.samples[s], tv.results[s], tv.errors[s]);
   end
@@ -242,12 +251,16 @@ task test_sample;
   // Expected outputs
   input [15:0] expected_fir_out;
   input expected_err;
+
 begin
   enqueue_transaction(1'b1, WRITE, ADDR_SAMPLE, sample_value, NOERR, SIZE_1);
   execute_transactions(1);
-
-  #(CLK_PERIOD * 17);
-
+  //enqueue_transaction(1'b1, READ, ADDR_STATUS, 16'b1, NOERR, SIZE_1);
+  //execute_transactions(1);
+  //while (read_reg[0]) begin
+    //enqueue_transaction(1'b1, READ, ADDR_STATUS, 16'b1, NOERR, SIZE_1);
+  //end
+  #(20 * CLK_PERIOD);
   enqueue_transaction(1'b1, READ, ADDR_RESULT, expected_fir_out, NOERR, SIZE_1);
   execute_transactions(1);
 
@@ -461,9 +474,16 @@ initial begin
   reset_dut();
 
   configure(tb_test_vectors[0].coeffs);
+  enqueue_transaction(1'b1, READ, ADDR_COEF_F0, tb_test_vectors[0].coeffs[0], NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_COEF_F1, tb_test_vectors[0].coeffs[1], NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_COEF_F2, tb_test_vectors[0].coeffs[2], NOERR, SIZE_1);
+  enqueue_transaction(1'b1, READ, ADDR_COEF_F3, tb_test_vectors[0].coeffs[3], NOERR, SIZE_1);
+  execute_transactions(4);
+
+
 
   // Give some visual spacing between check and next test case start
-  #(CLK_PERIOD * 20);
+  #(CLK_PERIOD * 5);
 
 
  //*****************************************************************************
@@ -505,12 +525,11 @@ initial begin
   // Update Navigation Info
   tb_test_case     = "vector test";
   tb_test_case_num = tb_test_case_num + 1;
-  init_fir_side();
-  init_expected_outs();
   // Reset the DUT to isolate from prior test case
   reset_dut();
-
   test_stream(tb_test_vectors[0]);
+  reset_dut();
+  test_stream(tb_test_vectors[1]);
 
 end
 

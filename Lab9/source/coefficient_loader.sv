@@ -41,7 +41,8 @@ module coefficient_loader (
             LOAD2:  next_s = WAIT2;
             WAIT2:  next_s = (modwait) ? WAIT2 : LOAD3;
             LOAD3:  next_s = WAIT3;
-            WAIT3:  next_s = (modwait) ? WAIT3 : IDLE;
+            WAIT3:  next_s = (modwait) ? WAIT3 : DONE;
+            DONE:   next_s = IDLE;
             default: next_s = IDLE;
         endcase
     end

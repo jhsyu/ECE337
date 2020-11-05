@@ -41,10 +41,11 @@ module ahb_lite_slave(
 
     logic [7:0] new_coeff;
     logic [7:0] next_new_coeff;
-    assign new_coefficient_set = new_coeff[0];
+
+    logic next_new_coefficient_set;
 
     logic [15:0] status;
-    assign status = {7'b0, err, 7'b0, modwait};
+    assign status = {7'b0, err, 7'b0, modwait || new_coefficient_set};
 
     logic [3:0] haddr_reg;
 
@@ -177,7 +178,7 @@ module ahb_lite_slave(
 
     // registers
     // hwrite, hsize, htrans, haddr register 
-    always_ff @ (posedge clk, negedge n_rst) begin
+    always_ff @(posedge clk, negedge n_rst) begin
         if(n_rst == 0) begin
             hwrite_reg <= '0;
             htrans_reg <= '0;
@@ -194,7 +195,7 @@ module ahb_lite_slave(
     end
 
     // fir coefficient register
-    always_ff @ (posedge clk, negedge n_rst) begin
+    always_ff @(posedge clk, negedge n_rst) begin
         if(n_rst == 0) begin
             f0_reg <= '0;
             f1_reg <= '0;
@@ -209,7 +210,7 @@ module ahb_lite_slave(
         end
     end
 
-    always_ff @ (posedge clk, negedge n_rst) begin
+    always_ff @(posedge clk, negedge n_rst) begin
         if(n_rst == 0) begin
             new_coeff <= '0;
             data_ready <= '0;
@@ -220,6 +221,24 @@ module ahb_lite_slave(
             new_coeff <= next_new_coeff;
             data_ready <= next_data_ready;
             sample_data <= next_sample_data;
+        end
+    end
+    // new_coefficient_set register. 
+    always_ff @(posedge clk, negedge n_rst) begin
+        if (~n_rst) begin
+            new_coefficient_set <= '0;
+        end
+        else begin
+            new_coefficient_set <= next_new_coefficient_set;
+        end
+    end
+
+    always_comb begin
+        if (coeff_clr) begin
+            next_new_coefficient_set = 1'b0;
+        end
+        else begin
+            next_new_coefficient_set = next_new_coeff[0];
         end
     end
 

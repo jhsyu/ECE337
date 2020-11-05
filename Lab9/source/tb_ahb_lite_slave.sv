@@ -508,6 +508,31 @@ initial begin
   enqueue_transaction(1'b1, WRITE, ADDR_STATUS, 16'h0100, ERR, BYTE2);
   execute_transactions(1);
   #(CLK_PERIOD * 3);
+
+
+  //*****************************************************************************
+  // Test Case 5: read/ write result register test
+  //*****************************************************************************
+  // Update Navigation Info
+  tb_test_case     = "read result register test";
+  tb_test_case_num = tb_test_case_num + 1;
+  init_fir_side();
+  init_expected_outs();
+  // Reset the DUT to isolate from prior test case
+  reset_dut();
+  $info("test case %d, %s", tb_test_case_num, tb_test_case);
+  tb_fir_out = 16'hffff;
+  #(5 * CLK_PERIOD);
+  enqueue_transaction(1'b1, READ, ADDR_RESULT, 16'hffff, NOERR, BYTE2);
+  execute_transactions(1);
+  #(CLK_PERIOD * 3);
+  enqueue_transaction(1'b1, WRITE, ADDR_RESULT, 16'hffff, ERR, BYTE2);
+  execute_transactions(1);
+  #(CLK_PERIOD);
+
+
+
+
 end
 
 endmodule
