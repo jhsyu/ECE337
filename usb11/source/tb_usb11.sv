@@ -37,6 +37,8 @@ module tb_usb11();
     task reset; begin
         @(negedge tb_clk); 
         tb_n_rst = 1'b0; 
+        tb_d_plus = 1;
+        tb_d_minus = 0;
         @(posedge tb_clk);
         #(CLK_PERIOD); 
         @(negedge tb_clk); 
@@ -110,6 +112,7 @@ module tb_usb11();
         @(negedge tb_clk);
         tb_r_enable = 1;
         @(posedge tb_clk); 
+        @(negedge tb_clk)
         if (tb_r_data == expected_r_data) begin
             $info("correct rdata in testcase %d", test_num);
         end
@@ -133,6 +136,7 @@ module tb_usb11();
     task check_PID(
         input logic[3:0] expected_PID
     ); begin
+        #(CLK_PERIOD * 2); // wait for processing. 
         if(tb_PID == expected_PID) begin
             $info("correct PID in testcase %d. ", test_num);
         end 
@@ -176,11 +180,26 @@ module tb_usb11();
         
         // testcase 2 sync byte transfer. 
         test_num ++; 
-        test_info = "reset DUT"; 
+        test_info = "sync byte transfer"; 
         reset(); 
         send_sync_byte();
         check_err(1'b0);
-        check_PID(4'b0001);
+
+        // testcase 3: single byte transfer. 
+        test_num ++; 
+        test_info = "single byte transfer"; 
+        reset(); 
+        send_sync_byte();
+        send_PID(4'b0001); 
+        check_PID(4'b0001); 
+        tb_test_byte = 8'b11001001; 
+        send_byte(tb_test_byte); 
+        check_fifo(tb_test_byte); 
+        check_err(1'b0); 
+        send_eop(); 
+
+
+        // testcase 4: consecutive bytes transfer. 
 
     end
     

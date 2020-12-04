@@ -76,7 +76,14 @@ module rcu
             end
             PID_WRITE: next_s = PID_CHECK; 
             PID_CHECK: next_s = (pid_err) ? ERR : DATA_WAIT; 
-            DATA_WAIT: next_s = (eop && shift_en) ? EOP : DATA_RCV;
+            DATA_WAIT: begin
+                if (~eop && shift_en) begin
+                    next_s = DATA_RCV; 
+                end
+                else if (eop && shift_en) begin
+                    next_s = EOP; 
+                end
+            end
             DATA_RCV: begin
                 if (eop && shift_en) begin
                     next_s = ERR_EOP; 
@@ -95,7 +102,7 @@ module rcu
     end
 
     // output logic.
-    assign rcving = (s == ERR_IDLE || s == IDLE) ? 1'b0 : 1'b1; 
+    assign rcving = (s == ERR_IDLE || s == IDLE || s == EOP || s == ERR_EOP) ? 1'b0 : 1'b1; 
     assign w_enable = (s == DATA_WRITE)? 1'b1 : 1'b0; 
     assign r_error = (s > 4'd9) ? 1'b1 : 1'b0; 
     assign pid_set = (s == PID_WRITE) ? 1'b1 : 1'b0; 
