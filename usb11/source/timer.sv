@@ -32,7 +32,7 @@ module timer
                 next_count = 4'd6; 
                 next_shift_en = 1'b0; 
             end
-            else if (count == 4'd8 || bit_stuff) begin
+            else if (count == 4'd8) begin
                 next_count = 4'd1; 
                 next_shift_en = 1'b1;
             end

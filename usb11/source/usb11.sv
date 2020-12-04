@@ -5,14 +5,16 @@ module usb11(
     input logic n_rst,
     input logic d_plus, 
     input logic d_minus, 
-    input logic ren, 
+    input logic r_enable, 
+    output logic rcving, 
     output logic full, 
     output logic empty, 
-    output logic [7:0] rdata, 
+    output logic r_error, 
+    output logic [7:0] r_data, 
     output logic [3:0] PID
     );
     
-    logic dp, dm, eop, d_edge, d_orig, shift_en, rcving, bit_stuff, byte_rcvd; 
+    logic dp, dm, eop, d_edge, d_orig, shift_en, bit_stuff, byte_rcvd; 
     logic [7:0] rcv_data; 
     logic pid_set, pid_err, pid_rst; 
     // eop detect logic. 
