@@ -1,6 +1,6 @@
 //  Module: bit_stuffer
 //
-module bit_stuffer
+module bit_stuff_det
     (
         input logic clk, 
         input logic n_rst, 
@@ -23,4 +23,4 @@ module bit_stuffer
     );
 
     
-endmodule: bit_stuffer
+endmodule: bit_stuff_det

@@ -10,63 +10,51 @@ module timer
         output logic shift_en, 
         output logic byte_rcvd
     );
-    logic clr; 
-    assign clr = bit_stuff || d_edge; 
-    logic flag, next_flag; 
-    logic [3:0] count_val; 
-    // flag == 0 indicates 4 cycle not completed yet. 
-    // flag == 1 indicates 4 cycle pulse completed. 
-    // used as the enable signal of the second counter
-    // that counts every 8 cycle. 
+    logic [3:0] count, next_count;
+    logic next_shift_en; 
+
     always_ff @(posedge clk, negedge n_rst) begin
         if (~n_rst) begin
-            flag <= 1'b0;
+            // begin over. count 4 cycles. 
+            count <= 4'd6; 
+            shift_en <= 1'b0; 
         end
         else begin
-            flag <= next_flag; 
+            count <= next_count; 
+            shift_en <= next_shift_en; 
         end
     end
 
     always_comb begin
-        // if bit_stuff or d_edge assert, flag reset to 0. 
-        // if current flag is 1, keep 1. 
-        // if current flag is 0, 
-        //     1. next_flag is 1 if have waited 4 cycle. 
-        //     2. next_flag is 0 if not 4 cycle yet. 
-        if (bit_stuff || d_edge) begin
-            next_flag = 1'b0;
-        end
-        else if (flag == 1'b1 || count_val == 4'd4) begin
-            next_flag = 1'b1; 
+        if (rcving) begin
+            // if d_edge pulse, count 4 cycles. 
+            if (d_edge) begin
+                next_count = 4'd6; 
+                next_shift_en = 1'b0; 
+            end
+            else if (count == 4'd8 || bit_stuff) begin
+                next_count = 4'd1; 
+                next_shift_en = 1'b1;
+            end
+            else begin
+                next_count = count + 1; 
+                next_shift_en = 1'b0; 
+            end            
         end
         else begin
-            next_flag = 1'b0; 
+            next_count = 4'd0; 
+            next_shift_en = 1'b0; 
         end
     end
-    
-    logic shift_en0, shift_en1;
-    assign shift_en = shift_en0 || shift_en1; 
-    
-    flex_counter #(.NUM_CNT_BITS(4)) cnt (
+
+    flex_counter #(.NUM_CNT_BITS(4)) cnt_bit (
         .clk(clk), 
         .n_rst(n_rst), 
         .clear(d_edge), 
-        .count_enable(~flag), 
-        .count_out(count_val), 
-        .rollover_val(4'd4), 
-        .rollover_flag(shift_en0)
-    ); 
-
-
-    flex_counter #(.NUM_CNT_BITS(4)) cnt8 (
-        .clk(clk), 
-        .n_rst(n_rst), 
-        .clear(d_edge), 
-        .count_enable(flag), 
+        .count_enable(shift_en), 
         .rollover_val(4'd8), 
-        .rollover_flag(shift_en1)
+        .rollover_flag(byte_rcvd)
     ); 
-
 
     
 endmodule: timer
