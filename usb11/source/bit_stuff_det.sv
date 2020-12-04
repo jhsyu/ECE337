@@ -13,7 +13,7 @@ module bit_stuff_det
     // count six '1' in the decoded data stream. 
     assign clear = ~d_orig & shift_en; 
     // if there is no consecutive 1's, clear the counter. 
-    flex_counter #(.NUM_BITS(3)) cnt (
+    flex_counter #(.NUM_CNT_BITS(3)) cnt (
         .clk(clk), 
         .n_rst(n_rst), 
         .clear(clear), 

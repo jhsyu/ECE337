@@ -16,12 +16,12 @@ include /home/ecegrid/a/ece337/Course_Prod/course_make_vars
 # (do not include the source folder in the name)
 # NOTE: YOU WILL NEED TO SET THIS VARIABLE'S VALUE WHEN WORKING WITH HEIRARCHICAL DESIGNS
 # AND THE AUTOMATED GRADING SYSTEM
-COMPONENT_FILES	:= usb11.sv
+COMPONENT_FILES	:= bit_stuff_det.sv decoder.sv edge_detect.sv pid_detect.sv rcu.sv shift_register.sv timer.sv sync_high.sv sync_low.sv flex_counter.sv flex_stp_sr.sv
 
 # Specify the name of the top level file (do not include the source folder in the name)
 # NOTE: YOU WILL NEED TO SET THIS VARIABLE'S VALUE WHEN WORKING WITH HEIRARCHICAL DESIGNS
 # AND THE AUTOMATED GRADING SYSTEM
-TOP_LEVEL_FILE	:= bit_stuff.sv decoder.sv edge_detect.sv pid_detect.sv rcu.sv shift_register.sv timer.sv sync_high.sv sync_low.sv flex_counter.sv
+TOP_LEVEL_FILE	:= usb11.sv
 
 # Specify the filepath of the test bench you want to use (ie. tb_top_level.sv)
 # (do not include the source folder in the name)

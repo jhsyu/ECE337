@@ -107,21 +107,23 @@ module tb_usb11();
     task  check_fifo(
         input logic [7:0] expected_r_data
     ); begin
+        @(negedge tb_clk);
+        tb_r_enable = 1;
+        @(posedge tb_clk); 
         if (tb_r_data == expected_r_data) begin
             $info("correct rdata in testcase %d", test_num);
         end
         else $error("incorrect rdata in testcase %d", test_num); 
-
-        @(negedge tb_clk);
-        tb_r_enable = 1;
-        #(CLK_PERIOD);
+        @(negedge tb_clk); 
         tb_r_enable = 0;
         #(CLK_PERIOD);    
     end
     endtask //
 
-    task check_err(); begin   
-        if(tb_r_error == 1) begin
+    task check_err(
+        input logic expected_r_error
+    ); begin   
+        if(tb_r_error == expected_r_error) begin
             $info("correct error output in testcase %d", test_num);
         end 
         else $error("incorrect error output in testcase %d.", test_num);
@@ -155,7 +157,31 @@ module tb_usb11();
     );   
 
     initial begin
+        tb_n_rst = 1;
+        tb_d_plus = 1;
+        tb_d_minus = 0;
+        tb_r_enable = 0;
+
+        tb_expected_PID = '1; 
         
+        count_1 = 0;
+        test_num = 0;
+        bit_num = 0;
+        // test case 1
+        test_num ++; 
+        test_info = "reset DUT"; 
+        reset(); 
+        check_PID(4'b1111); 
+        check_err(1'b0); 
+        
+        // testcase 2 sync byte transfer. 
+        test_num ++; 
+        test_info = "reset DUT"; 
+        reset(); 
+        send_sync_byte();
+        check_err(1'b0);
+        check_PID(4'b0001);
+
     end
     
 endmodule: tb_usb11

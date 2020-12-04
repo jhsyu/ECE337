@@ -14,7 +14,7 @@ module shift_register
     assign shift_enable = shift_en & (~stuff_bit); 
     // the bit_stuffer module sends a stuff_bit pulse 
     // indicating the bit loss. 
-    flex_stp_sr #(.NUM_BITS(8), .SHIFT_MSB(0)) wrap (
+    flex_stp_sr #(.NUM_BITS(8), .SHIFT_MSB(0)) stp_reg (
         .clk(clk),
         .n_rst(n_rst),
         .shift_enable(shift_enable),

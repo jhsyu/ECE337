@@ -33,6 +33,8 @@ module usb11(
         .sync_out(dp)
     );
     edge_detect edge_det (
+        .clk(clk), 
+        .n_rst(n_rst),
         .d_plus(dp),
         .d_edge(d_edge)
     );

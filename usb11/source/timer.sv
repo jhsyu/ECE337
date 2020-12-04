@@ -42,7 +42,7 @@ module timer
             end            
         end
         else begin
-            next_count = 4'd0; 
+            next_count = 4'd6; 
             next_shift_en = 1'b0; 
         end
     end
@@ -50,7 +50,7 @@ module timer
     flex_counter #(.NUM_CNT_BITS(4)) cnt_bit (
         .clk(clk), 
         .n_rst(n_rst), 
-        .clear(d_edge), 
+        .clear(1'b0), 
         .count_enable(shift_en && ~bit_stuff), 
         .rollover_val(4'd8), 
         .rollover_flag(byte_rcvd)

@@ -95,7 +95,7 @@ module rcu
     end
 
     // output logic.
-    assign rcving = (s == ERR_IDLE) ? 1'b1 : 1'b0; 
+    assign rcving = (s == ERR_IDLE || s == IDLE) ? 1'b0 : 1'b1; 
     assign w_enable = (s == DATA_WRITE)? 1'b1 : 1'b0; 
     assign r_error = (s > 4'd9) ? 1'b1 : 1'b0; 
     assign pid_set = (s == PID_WRITE) ? 1'b1 : 1'b0; 
