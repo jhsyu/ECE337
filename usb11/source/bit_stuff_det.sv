@@ -1,4 +1,4 @@
-//  Module: bit_stuffer
+//  Module: bit_stuff_det
 //
 module bit_stuff_det
     (
@@ -10,9 +10,9 @@ module bit_stuff_det
     );
 
     logic clear; 
-    // clear the counter, 
-    // since there is a re-synchronize activity. 
+    // count six '1' in the decoded data stream. 
     assign clear = ~d_orig & shift_en; 
+    // if there is no consecutive 1's, clear the counter. 
     flex_counter #(.NUM_BITS(3)) cnt (
         .clk(clk), 
         .n_rst(n_rst), 

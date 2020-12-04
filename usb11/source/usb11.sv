@@ -11,8 +11,10 @@ module usb11(
     output logic [7:0] rdata, 
     output logic [3:0] PID
     );
-
+    
     logic dp, dm, eop, d_edge; 
+    assign eop = (~dp && ~dm) ? 1'b1 : 1'b0;  
+    
     sync_low  sync0 (.clk(clk), 
                      .n_rst(n_rst), 
                      .async_in(d_minus), 
@@ -22,10 +24,6 @@ module usb11(
                       .n_rst(n_rst), 
                       .async_in(d_plus), 
                       .sync_out(dp)
-    );
-    eop_detect eop_det (.d_plus(dp), 
-                    .d_minus(dm), 
-                    .eop(eop)
     );
     edge_detect edge_det (.d_plus(dp),
                           .d_edge(d_edge)
