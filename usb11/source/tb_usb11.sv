@@ -185,7 +185,7 @@ module tb_usb11();
         send_sync_byte();
         check_err(1'b0);
 
-        // testcase 3: single byte transfer. 
+        // testcase 3: data byte transfer. 
         test_num ++; 
         test_info = "single byte transfer"; 
         reset(); 
@@ -199,7 +199,18 @@ module tb_usb11();
         send_eop(); 
 
 
-        // testcase 4: consecutive bytes transfer. 
+        // testcase 4: bit stuff  test. 
+        test_num ++; 
+        test_info = "single byte transfer"; 
+        reset(); 
+        send_sync_byte();
+        send_PID(4'b0001); 
+        check_PID(4'b0001); 
+        tb_test_byte = 8'b00111111; 
+        send_byte(tb_test_byte); 
+        check_fifo(tb_test_byte); 
+        check_err(1'b0); 
+        send_eop(); 
 
     end
     
