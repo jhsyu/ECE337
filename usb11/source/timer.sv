@@ -51,7 +51,7 @@ module timer
         .clk(clk), 
         .n_rst(n_rst), 
         .clear(d_edge), 
-        .count_enable(shift_en), 
+        .count_enable(shift_en && ~bit_stuff), 
         .rollover_val(4'd8), 
         .rollover_flag(byte_rcvd)
     ); 

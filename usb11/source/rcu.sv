@@ -33,8 +33,6 @@ module rcu
     localparam ERR_EOP = 4'd12;  
 
     logic [3:0] s, next_s; 
-    logic [4:0] rcu_output; 
-    assign {pid_set, pid_rst, r_error, w_enable, rcving} = rcu_output [4:0]; 
     // state regs. 
     always_ff @(posedge clk, negedge n_rst) begin
         if (~n_rst) begin
@@ -95,6 +93,13 @@ module rcu
             ERR_IDLE: next_s = (d_edge) ? SYNC : ERR_IDLE; 
         endcase
     end
+
+    // output logic.
+    assign rcving = (s == ERR_IDLE) ? 1'b1 : 1'b0; 
+    assign w_enable = (s == DATA_WRITE)? 1'b1 : 1'b0; 
+    assign r_error = (s > 4'd9) ? 1'b1 : 1'b0; 
+    assign pid_set = (s == PID_WRITE) ? 1'b1 : 1'b0; 
+    assign pid_rst = (s == SYNC) ? 1'b1 : 1'b0; 
     
 
     
