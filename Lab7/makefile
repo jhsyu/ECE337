@@ -220,11 +220,11 @@ sim_full_source: $(addprefix $(S_WORK_LIB)/, $(notdir $(basename $(TOP_LEVEL_FIL
 
 # Uncomment below if you want run the simulation the normal way and have it
 # run the specified .do file
-#	@$(SIMULATE) -t ps -do s_waves.do $(S_WORK_LIB).$(TB_MODULE)
+	@$(SIMULATE) -t ps -do fir.do $(S_WORK_LIB).$(TB_MODULE)
 
 # This way just runs it like normal and only sets up the simulation but doesn't
 # run it or add any waveforms
-	@$(SIMULATE) -i -t ps $(S_WORK_LIB).$(TB_MODULE)
+#	@$(SIMULATE) -i -t ps $(S_WORK_LIB).$(TB_MODULE)
 	@cp -f transcript $(basename $(TOP_LEVEL_FILE)).stran
 	@echo -e "Done simulating the source design\n\n"
 
@@ -238,11 +238,11 @@ sim_full_mapped: $(addprefix $(M_WORK_LIB)/, $(notdir $(basename $(TOP_LEVEL_FIL
 
 # Uncomment below if you want run the simulation the normal way and have it
 # run the specified .do file
-#	@$(SIMULATE) -t ps -do s_waves.do $(M_WORK_LIB).$(TB_MODULE)
+	@$(SIMULATE) -t ps -do fir.do $(M_WORK_LIB).$(TB_MODULE)
 
 # This way just runs it like normal and only sets up the simulation but doesn't
 # run it or add any waveforms
-	@$(SIMULATE) -i -t ps $(M_WORK_LIB).$(TB_MODULE)
+#	@$(SIMULATE) -i -t ps $(M_WORK_LIB).$(TB_MODULE)
 	@cp -f transcript $(basename $(TOP_LEVEL_FILE)).mtran
 	@echo -e "Done simulating the mapped design\n\n"
 
@@ -272,8 +272,8 @@ tbsim_%_mapped: $(M_WORK_LIB)/% $(M_WORK_LIB)/tb_%
 
 # Set the default value of the clock name and clock period to an empty string so that clock timing will
 # only be activated in the SYN_CMDS definition if they were overwritten at invocation
-CLOCK_NAME 		:=
-CLOCK_PERIOD	:=
+CLOCK_NAME 		:= clk
+CLOCK_PERIOD	:= 8
 
 # Set the default value of the source files for sub modules to be an empty string so that
 # it will only be used if overwritten at invocation

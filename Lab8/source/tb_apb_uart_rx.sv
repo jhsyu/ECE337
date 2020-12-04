@@ -567,7 +567,7 @@ initial begin
 
 
   //*****************************************************************************
-  // Test Case 4: 10 cycles, 8 bit width, multiple packages, overrun. 
+  // Test Case 6: 10 cycles, 8 bit width, multiple packages, overrun. 
   //*****************************************************************************
   // Update Navigation Info
   tb_test_case     = "10 cycles, 8 bit width, multiple packages, overrun";

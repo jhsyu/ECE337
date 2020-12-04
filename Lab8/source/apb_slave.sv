@@ -67,7 +67,7 @@ module apb_slave(
         pslverr = 1'b0;
         read_sel = 3'b0;
         write_sel = 3'b0;
-       if (psel && pwrite && penable) begin // write mode
+       if (psel && pwrite) begin // write mode
             case (paddr)
                 3'd2:   write_sel = paddr;
                 3'd3:   write_sel = paddr;
@@ -75,7 +75,7 @@ module apb_slave(
                 default:pslverr = 1'b1;
             endcase   
        end 
-       else if (psel && ~pwrite && psel) begin // read mode
+       else if (psel && ~pwrite) begin // read mode
             case (paddr)
                 3'd7:   pslverr = 1'b1;
                 default:read_sel = paddr;
@@ -104,19 +104,26 @@ module apb_slave(
             next_data_buffer_reg = data_buffer_reg;
         end
     end
-    
-    // update registers. 
+    // update writing registers. 
     always_ff @(posedge clk, negedge n_rst) begin
         if (~n_rst) begin
             data_size_reg <= 0;
             bit_period_reg0 <= 0;
             bit_period_reg1 <= 0;
-            data_buffer_reg <= 0;
         end
         else begin
             data_size_reg <= next_data_size_reg;
             bit_period_reg0 <= next_bit_period_reg0;
-            bit_period_reg1 <= next_bit_period_reg1;
+            bit_period_reg1 <= next_bit_period_reg1;            
+        end
+    end
+    
+    // update data buffer. 
+    always_ff @(posedge clk, negedge n_rst) begin
+        if (~n_rst) begin
+            data_buffer_reg <= 0;
+        end
+        else begin
             data_buffer_reg <= next_data_buffer_reg;
         end
     end
