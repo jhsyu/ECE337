@@ -230,9 +230,9 @@ module tb_usb11();
         send_byte(8'b0);
         check_err(1'b1);  
 
-        // testcase 6: EOP error test. 
+        // testcase 6: EOP during data receiving error test. 
         test_num ++; 
-        test_info = "sync error test"; 
+        test_info = "EOP during data receiving error test"; 
         reset();
         send_sync_byte();
         send_PID(4'b0001); 
@@ -240,6 +240,66 @@ module tb_usb11();
         send_bit(0); 
         send_eop(); 
         check_err(1'b1);
+        
+        // testcase 7: valid pid check.
+        test_num ++; 
+        test_info = "EOP during data receiving error test"; 
+        reset(); 
+        send_sync_byte(); 
+        send_PID(4'b0001);
+        check_PID(4'b0001);     
+        send_eop();
+        reset();  
+
+        send_sync_byte(); 
+        send_PID(4'b0010);
+        check_PID(4'b0010);     
+        send_eop();
+        reset();  
+
+        send_sync_byte(); 
+        send_PID(4'b0011);
+        check_PID(4'b0011);     
+        send_eop();
+        reset();  
+
+        send_sync_byte(); 
+        send_PID(4'b1001);
+        check_PID(4'b1001);     
+        send_eop();
+        reset();  
+
+        send_sync_byte(); 
+        send_PID(4'b1011);
+        check_PID(4'b1011);     
+        send_eop();
+        reset();  
+
+        send_sync_byte(); 
+        send_PID(4'b1010);
+        check_PID(4'b1010);     
+        send_eop();
+        reset();  
+
+        send_sync_byte(); 
+        send_PID(4'b1110);
+        check_PID(4'b1110);     
+        send_eop();
+        reset();  
+
+        // testcase 8: invalid pid error test. 
+        test_num ++; 
+        test_info = "EOP during data receiving error test"; 
+        reset(); 
+        send_sync_byte(); 
+        send_PID(4'b1111);
+        check_err(1'b1); 
+        send_eop();
+        reset();  
+
+
+
+
 
 
 
