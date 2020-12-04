@@ -125,7 +125,8 @@ module tb_usb11();
 
     task check_err(
         input logic expected_r_error
-    ); begin   
+    ); begin
+        #(CLK_PERIOD * 4);    
         if(tb_r_error == expected_r_error) begin
             $info("correct error output in testcase %d", test_num);
         end 
@@ -201,7 +202,7 @@ module tb_usb11();
 
         // testcase 4: bit stuff  test. 
         test_num ++; 
-        test_info = "single byte transfer"; 
+        test_info = "bit stuff  test"; 
         reset(); 
         send_sync_byte();
         send_PID(4'b0001); 
@@ -211,6 +212,37 @@ module tb_usb11();
         check_fifo(tb_test_byte); 
         check_err(1'b0); 
         send_eop(); 
+        reset(); 
+        send_sync_byte();
+        send_PID(4'b0001); 
+        check_PID(4'b0001); 
+        tb_test_byte = 8'b11111111; 
+        send_byte(tb_test_byte); 
+        check_fifo(tb_test_byte); 
+        check_err(1'b0); 
+        send_eop(); 
+
+
+        // testcase 5: sync error test. 
+        test_num ++; 
+        test_info = "sync error test"; 
+        reset(); 
+        send_byte(8'b0);
+        check_err(1'b1);  
+
+        // testcase 6: EOP error test. 
+        test_num ++; 
+        test_info = "sync error test"; 
+        reset();
+        send_sync_byte();
+        send_PID(4'b0001); 
+        send_bit(0); 
+        send_bit(0); 
+        send_eop(); 
+        check_err(1'b1);
+
+
+
 
     end
     
