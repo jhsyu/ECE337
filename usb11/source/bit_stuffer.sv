@@ -6,7 +6,7 @@ module bit_stuffer
         input logic n_rst, 
         input logic shift_en, 
         input logic d_orig, 
-        output logic stuff_bit_out
+        output logic bit_stuff
     );
 
     logic clear; 
@@ -19,7 +19,7 @@ module bit_stuffer
         .clear(clear), 
         .count_enable(shift_en), 
         .rollover_val(3'd6), 
-        .rollover_flag(stuff_bit_out)
+        .rollover_flag(bit_stuff)
     );
 
     
