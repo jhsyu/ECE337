@@ -23,7 +23,7 @@ module tb_usb11();
     integer bit_num; 
     string test_info;
 
-    localparam CLK_PERIOD = 1; 
+    localparam CLK_PERIOD = 2.5; 
 
     // Clock generation block
     always begin
