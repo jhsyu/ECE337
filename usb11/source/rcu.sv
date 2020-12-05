@@ -20,17 +20,16 @@ module rcu
     // states. 
     localparam IDLE = 4'd0; 
     localparam SYNC = 4'd1; 
-    localparam PID_WAIT = 4'd2; 
-    localparam PID_RCV = 4'd3; 
-    localparam PID_WRITE = 4'd4; 
-    localparam PID_CHECK = 4'd5; 
-    localparam DATA_WAIT = 4'd6; 
-    localparam DATA_RCV = 4'd7; 
-    localparam DATA_WRITE = 4'd8; 
-    localparam EOP = 4'd9; 
-    localparam ERR_IDLE = 4'd10; 
-    localparam ERR = 4'd11; 
-    localparam ERR_EOP = 4'd12;  
+    localparam PID_RCV = 4'd2; 
+    localparam PID_WRITE = 4'd3; 
+    localparam PID_CHECK = 4'd4; 
+    localparam DATA_WAIT = 4'd5; 
+    localparam DATA_RCV = 4'd6; 
+    localparam DATA_WRITE = 4'd7; 
+    localparam EOP = 4'd8; 
+    localparam ERR_IDLE = 4'd9; 
+    localparam ERR = 4'd10; 
+    localparam ERR_EOP = 4'd11;  
 
     logic [3:0] s, next_s; 
     // state regs. 
@@ -48,23 +47,18 @@ module rcu
         case (s)
             IDLE:   next_s = (d_edge) ? SYNC : IDLE;
             SYNC:   begin
-                if (byte_rcvd) begin
-                    if (rcv_data == 8'h80) begin
-                        next_s = PID_WAIT; 
+                if (byte_rcvd && (rcv_data == 8'h80) ) begin
+                    if (~eop && shift_en) begin
+                        next_s = PID_RCV; 
                     end
-                    else next_s = ERR; 
+                    else if (eop && shift_en) begin
+                        next_s = ERR_EOP; 
+                    end
                 end
-                // else: sync. 
+                else if (byte_rcvd && (byte_rcvd != 8'h80)) begin
+                    next_s = ERR; 
+                end
             end  
-            PID_WAIT: begin
-                if (~eop && shift_en) begin
-                    next_s = PID_RCV; 
-                end
-                else if (eop && shift_en) begin
-                    next_s = ERR_EOP; 
-                end
-                // else: PID_WAIT. 
-            end
             PID_RCV: begin
                 if (byte_rcvd) begin
                     next_s = PID_WRITE; 
@@ -95,7 +89,7 @@ module rcu
             end
             DATA_WRITE: next_s = DATA_WAIT; 
             EOP: next_s = (d_edge) ? IDLE : EOP; 
-            ERR: next_s = (eop && shift_en) ? ERR_EOP : ERR; 
+            ERR: next_s = (eop && shift_en || (s == SYNC && rcv_data != 8'h80)) ? ERR_EOP : ERR; 
             ERR_EOP: next_s = (d_edge) ? ERR_IDLE : ERR_EOP; 
             ERR_IDLE: next_s = (d_edge) ? SYNC : ERR_IDLE; 
         endcase
@@ -104,7 +98,7 @@ module rcu
     // output logic.
     assign rcving = (s == ERR_IDLE || s == IDLE || s == EOP) ? 1'b0 : 1'b1; 
     assign w_enable = (s == DATA_WRITE)? 1'b1 : 1'b0; 
-    assign r_error = (s > 4'd9) ? 1'b1 : 1'b0; 
+    assign r_error = (s > ERR_IDLE) ? 1'b1 : 1'b0; 
     assign pid_set = (s == PID_WRITE) ? 1'b1 : 1'b0; 
     assign pid_rst = (s == SYNC) ? 1'b1 : 1'b0; 
     

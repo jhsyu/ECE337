@@ -7,6 +7,7 @@ module shift_register
         input logic n_rst, 
         input logic shift_en, 
         input logic stuff_bit, 
+        input logic byte_rcvd, 
         input logic d_orig, 
         output logic [7:0] rcv_data
     );
