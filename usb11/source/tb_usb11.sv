@@ -109,17 +109,15 @@ module tb_usb11();
     task  check_fifo(
         input logic [7:0] expected_r_data
     ); begin
-        @(negedge tb_clk);
-        tb_r_enable = 1;
-        @(posedge tb_clk); 
-        @(negedge tb_clk)
         if (tb_r_data == expected_r_data) begin
             $info("correct rdata in testcase %d", test_num);
         end
         else $error("incorrect rdata in testcase %d", test_num); 
         @(negedge tb_clk); 
-        tb_r_enable = 0;
-        #(CLK_PERIOD);    
+        tb_r_enable = 1'b1;
+        @(negedge tb_clk);
+        tb_r_enable = 1'b0; 
+
     end
     endtask //
 
@@ -192,12 +190,12 @@ module tb_usb11();
         reset(); 
         send_sync_byte();
         send_PID(4'b0001); 
-        check_PID(4'b0001); 
         tb_test_byte = 8'b11001001; 
         send_byte(tb_test_byte); 
-        check_fifo(tb_test_byte); 
-        check_err(1'b0); 
         send_eop(); 
+        check_PID(4'b0001); 
+        check_err(1'b0); 
+        check_fifo(tb_test_byte); 
 
 
         // testcase 4: bit stuff  test. 
@@ -206,21 +204,15 @@ module tb_usb11();
         reset(); 
         send_sync_byte();
         send_PID(4'b0001); 
-        check_PID(4'b0001); 
-        tb_test_byte = 8'b00111111; 
-        send_byte(tb_test_byte); 
-        check_fifo(tb_test_byte); 
-        check_err(1'b0); 
+        send_byte(8'b00111111); 
         send_eop(); 
-        reset(); 
+        check_fifo(8'b00111111); 
+
         send_sync_byte();
         send_PID(4'b0001); 
-        check_PID(4'b0001); 
-        tb_test_byte = 8'b11111111; 
-        send_byte(tb_test_byte); 
-        check_fifo(tb_test_byte); 
-        check_err(1'b0); 
+        send_byte(8'b11111111); 
         send_eop(); 
+        check_fifo(8'b11111111); 
 
 
         // testcase 5: sync error test. 
@@ -297,13 +289,19 @@ module tb_usb11();
         send_eop();
         reset();  
 
-
-
-
-
-
-
-
+        // testcase 9: consecutive bytes. 
+        test_num ++; 
+        test_info = "consecutive bytes"; 
+        reset(); 
+        send_sync_byte();
+        send_PID(4'b0001); 
+        tb_test_byte = 8'b11001001; 
+        send_byte(tb_test_byte); 
+        tb_test_byte = 8'b11110000; 
+        send_byte(tb_test_byte); 
+        check_fifo(8'b11001001); 
+        check_fifo(8'b11110000); 
+        send_eop(); 
 
     end
     
